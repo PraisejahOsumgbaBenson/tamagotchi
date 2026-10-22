@@ -16,9 +16,10 @@ deps: ## Install engine and shell dependencies
 	cd $(SHELL_DIR) && $(BUN) install
 
 .PHONY: build
-build: ## Build the engine binary and the shell bundle
+build: ## Build the engine binary
+	@# The shell is plain JavaScript with no bundler, so there is nothing
+	@# to build for it. Electron loads src/ directly.
 	cd $(ENGINE_DIR) && $(GO) build -o ../dist/tama-engine ./cmd/engine
-	cd $(SHELL_DIR) && $(BUN) run build
 
 .PHONY: test
 test: ## Run the test suite
@@ -32,9 +33,22 @@ fmt: ## Format the Go sources
 vet: ## Vet the Go sources
 	cd $(ENGINE_DIR) && $(GO) vet ./...
 
+.PHONY: check
+check: fmt vet test ## Format, vet and test in one go
+
 .PHONY: run
-run: ## Run the app
+run: build ## Run the engine and the shell together
+	@./dist/tama-engine & \
+	engine=$$!; \
+	trap 'kill $$engine 2>/dev/null; wait $$engine 2>/dev/null' EXIT INT TERM; \
 	cd $(SHELL_DIR) && $(BUN) run start
+
+.PHONY: debug
+debug: build ## Run the app with the DevTools port open on 9222
+	@./dist/tama-engine & \
+	engine=$$!; \
+	trap 'kill $$engine 2>/dev/null; wait $$engine 2>/dev/null' EXIT INT TERM; \
+	cd $(SHELL_DIR) && $(BUN) run debug
 
 .PHONY: rom
 rom: ## Fetch and verify the Tamagotchi P1 ROM (set ROM_URL first)
