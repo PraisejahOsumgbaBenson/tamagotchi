@@ -225,9 +225,15 @@ func TextWidth(text string) int {
 	return len(text)*(glyphWidth+1) - 1
 }
 
-// FillText draws text with the pixels inverted, which is how the original
-// highlights the current choice in a menu.
+// FillText draws text as holes cut out of a lit bar.
+//
+// The glass has no grey, so a highlighted choice is a solid block with the
+// letters punched out of it. Inverting each glyph cell on its own leaves the
+// gaps between the letters dark, which reads as noise rather than as a word.
 func (s *Screen) FillText(x, y int, text string) {
+	s.FillRect(x, y, TextWidth(text), glyphHeight)
+
+	cx := x
 	for _, r := range text {
 		g, ok := font[normalise(r)]
 		if !ok {
@@ -236,9 +242,11 @@ func (s *Screen) FillText(x, y int, text string) {
 		for row := 0; row < glyphHeight; row++ {
 			bits := g[row]
 			for col := 0; col < glyphWidth; col++ {
-				s.Set(x+col, y+row, bits&(1<<uint(col)) == 0)
+				if bits&(1<<uint(col)) != 0 {
+					s.Set(cx+col, y+row, false)
+				}
 			}
 		}
-		x += glyphWidth + 1
+		cx += glyphWidth + 1
 	}
 }

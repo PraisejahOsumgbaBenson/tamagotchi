@@ -129,6 +129,16 @@ const (
 	// A long absence costs the pet a while, not its life.
 	catchUpLimit = 30 * time.Minute
 
+	// How long the egg sits before it hatches.
+	//
+	// The original takes about five minutes, which is a long time to watch an
+	// egg on a desk. Forty seconds keeps the first run moving without making
+	// the egg feel like a loading screen.
+	hatchInterval = 40 * time.Second
+
+	// How long the cracked shell stays up once the egg opens.
+	hatchFlash = 2 * time.Second
+
 	// How long the device waits to see whether a second button is joining
 	// the first one.
 	comboWindow = 120 * time.Millisecond
@@ -182,6 +192,7 @@ type Pet struct {
 	LastPoop      time.Time
 	LastPoopSeen  time.Time
 	LastMoodCheck time.Time
+	HatchAt       time.Time
 	AsleepSince   time.Time
 	WokeAt        time.Time
 
@@ -222,8 +233,19 @@ const (
 	MoodHatching
 )
 
-// New returns a pet that has just hatched.
+// New returns an egg, waiting to hatch.
+//
+// The device always starts as an egg. It rocks for a while, then the shell
+// cracks and the pet is there.
 func New(now time.Time) *Pet {
+	p := newBaby(now)
+	p.Stage = StageEgg
+	p.HatchAt = now.Add(hatchInterval)
+	return p
+}
+
+// newBaby builds the pet as it is the moment it leaves the egg.
+func newBaby(now time.Time) *Pet {
 	p := &Pet{
 		Stage:         StageBaby,
 		Weight:        20,
@@ -243,6 +265,26 @@ func New(now time.Time) *Pet {
 	}
 	p.RNG.state = 0x2545F4914F6CDD1D
 	return p
+}
+
+// hatch brings the pet out of its egg.
+func (p *Pet) hatch(now time.Time) {
+	p.Stage = StageBaby
+	p.HatchAt = time.Time{}
+	p.Mood = MoodHatching
+	p.MoodUntil = now.Add(hatchFlash)
+
+	// The clocks start when the pet does, not when the egg was laid. An egg
+	// that sat in a quit app for a day should not arrive starving.
+	p.LastHunger = now
+	p.LastHappy = now
+	p.LastAge = now
+	p.LastPoop = now
+	p.LastPoopSeen = now
+	p.LastMoodCheck = now
+	p.WokeAt = now
+
+	p.Emit(5200, 140)
 }
 
 // rng is a linear congruential generator.
@@ -513,14 +555,16 @@ func (p *Pet) pressPlay(b Button, now time.Time) {
 		} else {
 			p.Mood = MoodSad
 		}
+		// Hold the face long enough to be seen. Without this the next
+		// round replaces it in the same frame and every guess looks
+		// the same.
+		p.MoodUntil = now.Add(900 * time.Millisecond)
 		p.GameRound++
 		if p.GameRound >= 5 {
 			p.finishGame()
 			return
 		}
 		p.GameTarget = p.RNG.intn(2)
-		p.Mood = MoodPlaying
-		p.MoodUntil = nowPlus(p, 2*time.Second)
 	case ButtonC:
 		// The right button stops the game.
 		p.View = ViewMain
@@ -662,6 +706,14 @@ func (p *Pet) Tick(now time.Time) {
 	}
 
 	if p.Stage == StageEgg {
+		// An egg that has no hatch time was saved before hatching existed,
+		// so give it one rather than leaving it unhatched forever.
+		if p.HatchAt.IsZero() {
+			p.HatchAt = now.Add(hatchInterval)
+		}
+		if !now.Before(p.HatchAt) {
+			p.hatch(now)
+		}
 		return
 	}
 

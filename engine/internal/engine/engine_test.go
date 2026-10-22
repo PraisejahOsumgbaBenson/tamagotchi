@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/PraisejahOsumgbaBenson/tama/engine/internal/pet"
 	"github.com/PraisejahOsumgbaBenson/tama/engine/internal/proto"
 )
 
@@ -94,11 +95,7 @@ func TestSnapshotBeforeTheFirstStep(t *testing.T) {
 func TestButtonsActOnThePress(t *testing.T) {
 	// The pet waits a moment on the main screen to see whether a second
 	// button is joining the first, so the clock has to move.
-	clock := &fakeClock{
-		now:  time.Date(2026, 10, 22, 12, 0, 0, 0, time.UTC),
-		step: 50 * time.Millisecond,
-	}
-	e := New(Options{Clock: clock.Now})
+	e, _ := hatchedEngine(t, 50*time.Millisecond)
 
 	messages, cancel := e.Subscribe()
 	defer cancel()
@@ -121,7 +118,7 @@ func TestButtonsActOnThePress(t *testing.T) {
 func TestATapBetweenFramesIsNotLost(t *testing.T) {
 	// The shell reports the press and the release, and both can land
 	// between two frames. The latch is what keeps the tap.
-	e := New(Options{})
+	e, _ := hatchedEngine(t, 50*time.Millisecond)
 
 	messages, cancel := e.Subscribe()
 	defer cancel()
@@ -136,6 +133,28 @@ func TestATapBetweenFramesIsNotLost(t *testing.T) {
 	waitForFrame(t, messages, func(m proto.Message) bool {
 		return m.Kind == proto.KindFrame && m.Sel != 0
 	})
+}
+
+// hatchedEngine returns an engine whose pet has left the egg.
+//
+// The buttons do nothing while the pet is still an egg, so any test that
+// presses one has to get past the hatch first.
+func hatchedEngine(t *testing.T, step time.Duration) (*Engine, *fakeClock) {
+	t.Helper()
+
+	clock := &fakeClock{
+		now:  time.Date(2026, 10, 22, 12, 0, 0, 0, time.UTC),
+		step: step,
+	}
+	e := New(Options{Clock: clock.Now})
+
+	clock.now = clock.now.Add(45 * time.Second)
+	e.Step()
+
+	if stage := e.pet.Stage; stage != pet.StageBaby {
+		t.Fatalf("the pet is still %v after the hatch", stage)
+	}
+	return e, clock
 }
 
 // fakeClock is a clock that moves forward every time it is read.
