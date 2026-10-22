@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src ws://127.0.0.1:8733;"
+    />
+    <title>Tamagotchi</title>
+    <link rel="stylesheet" href="shell.css" />
+  </head>
+  <body>
+    <div class="stage" id="stage">
+      <div class="shadow" id="shadow"></div>
+
+      <div class="device" id="device">
+        <!-- The cracked eggshell print. Regenerate with shell/tools/eggshell.py. -->
+        <img class="eggshell" src="eggshell.svg" width="276" height="360" alt="" aria-hidden="true" />
+
+        <div class="bezel">
+          <div class="glass">
+            <canvas id="lcd" width="148" height="150"></canvas>
+            <div class="glass-sheen" aria-hidden="true"></div>
+            <div class="glass-edge" aria-hidden="true"></div>
+          </div>
+        </div>
+
+        <div class="buttons">
+          <button class="tama-btn" data-btn="a" type="button" aria-label="A">A</button>
+          <button class="tama-btn" data-btn="b" type="button" aria-label="B">B</button>
+          <button class="tama-btn" data-btn="c" type="button" aria-label="C">C</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="icons.js"></script>
+    <script src="lcd.js"></script>
+    <script src="audio.js"></script>
+    <script src="renderer.js"></script>
+  </body>
+</html>
