@@ -108,34 +108,16 @@
   --pattern-size: 40px 40px;
 }
 
-/* The black and white shells wear three sweet-shop buttons. One colour each
- * rather than one colour three times, and all of them far enough from the
- * body to read as buttons and not as more dots. */
-.device[data-theme="polka"] .tama-btn[data-btn="a"],
-.device[data-theme="pearl"] .tama-btn[data-btn="a"] {
+/* The black and white shells wear three rose buttons. One colour across the
+ * row, because three different ones turned the button bar into a sweet shop
+ * and pulled the eye away from the pet. */
+.device[data-theme="polka"] .tama-btn,
+.device[data-theme="pearl"] .tama-btn {
   --button-light: #ffd1e1;
   --button-mid: #ff92bd;
   --button-dark: #d55285;
   --button-ink: 96, 20, 54;
   --btn-shade: 168, 54, 100;
-}
-
-.device[data-theme="polka"] .tama-btn[data-btn="b"],
-.device[data-theme="pearl"] .tama-btn[data-btn="b"] {
-  --button-light: #c9f8e7;
-  --button-mid: #7ee0c0;
-  --button-dark: #35a988;
-  --button-ink: 18, 72, 56;
-  --btn-shade: 39, 135, 106;
-}
-
-.device[data-theme="polka"] .tama-btn[data-btn="c"],
-.device[data-theme="pearl"] .tama-btn[data-btn="c"] {
-  --button-light: #ffe9bd;
-  --button-mid: #ffd074;
-  --button-dark: #d69a2f;
-  --button-ink: 94, 62, 12;
-  --btn-shade: 170, 118, 36;
 }
 
 .device[data-theme="sakura"] {
