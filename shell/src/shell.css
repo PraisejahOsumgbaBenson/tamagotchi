@@ -34,7 +34,6 @@
   --pattern: none;
   --pattern-size: 40px 40px;
   --print-ink: 124, 99, 70;
-  --wordmark-color: 124, 99, 70;
   --wordmark-halo: 255, 255, 255;
 
   /* Colours for the moulded edges. The rim catches the light, the shade is
@@ -81,7 +80,6 @@
   --shade-rgb: 0, 0, 0;
   --well-shade: 0, 0, 0;
   --print-ink: 255, 255, 255;
-  --wordmark-color: 150, 150, 156;
   --wordmark-halo: 0, 0, 0;
   --pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Cg fill='%23ffffff' fill-opacity='0.95'%3E%3Ccircle cx='10' cy='10' r='6.2'/%3E%3Ccircle cx='30' cy='30' r='6.2'/%3E%3C/g%3E%3C/svg%3E");
   --pattern-size: 40px 40px;
@@ -105,10 +103,39 @@
   --shade-rgb: 96, 89, 80;
   --well-shade: 46, 41, 36;
   --print-ink: 22, 22, 25;
-  --wordmark-color: 96, 96, 100;
   --wordmark-halo: 255, 255, 255;
   --pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Cg fill='%23171719' fill-opacity='0.9'%3E%3Ccircle cx='10' cy='10' r='6.2'/%3E%3Ccircle cx='30' cy='30' r='6.2'/%3E%3C/g%3E%3C/svg%3E");
   --pattern-size: 40px 40px;
+}
+
+/* The black and white shells wear three sweet-shop buttons. One colour each
+ * rather than one colour three times, and all of them far enough from the
+ * body to read as buttons and not as more dots. */
+.device[data-theme="polka"] .tama-btn[data-btn="a"],
+.device[data-theme="pearl"] .tama-btn[data-btn="a"] {
+  --button-light: #ffd1e1;
+  --button-mid: #ff92bd;
+  --button-dark: #d55285;
+  --button-ink: 96, 20, 54;
+  --btn-shade: 168, 54, 100;
+}
+
+.device[data-theme="polka"] .tama-btn[data-btn="b"],
+.device[data-theme="pearl"] .tama-btn[data-btn="b"] {
+  --button-light: #c9f8e7;
+  --button-mid: #7ee0c0;
+  --button-dark: #35a988;
+  --button-ink: 18, 72, 56;
+  --btn-shade: 39, 135, 106;
+}
+
+.device[data-theme="polka"] .tama-btn[data-btn="c"],
+.device[data-theme="pearl"] .tama-btn[data-btn="c"] {
+  --button-light: #ffe9bd;
+  --button-mid: #ffd074;
+  --button-dark: #d69a2f;
+  --button-ink: 94, 62, 12;
+  --btn-shade: 170, 118, 36;
 }
 
 .device[data-theme="sakura"] {
@@ -126,7 +153,6 @@
   --rim-rgb: 255, 248, 250;
   --shade-rgb: 178, 111, 128;
   --print-ink: 255, 255, 255;
-  --wordmark-color: 138, 84, 100;
   --wordmark-halo: 116, 56, 76;
   --pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Cg fill='%23ffffff' fill-opacity='0.5'%3E%3Cpath transform='translate(2 2) scale(0.55)' d='M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z'/%3E%3Cpath transform='translate(20 20) scale(0.55)' d='M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z'/%3E%3C/g%3E%3C/svg%3E");
   --pattern-size: 40px 40px;
@@ -147,7 +173,6 @@
   --rim-rgb: 246, 252, 255;
   --shade-rgb: 110, 145, 172;
   --print-ink: 255, 255, 255;
-  --wordmark-color: 72, 112, 150;
   --wordmark-halo: 40, 80, 120;
   --pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='36'%3E%3Cg fill='%23ffffff' fill-opacity='0.55'%3E%3Cpath transform='translate(2 2) scale(0.5)' d='M12 2l2.9 6.6 7.1.6-5.4 4.7 1.6 7-6.2-3.7-6.2 3.7 1.6-7L2 9.2l7.1-.6z'/%3E%3Cpath transform='translate(20 20) scale(0.5)' d='M12 2l2.9 6.6 7.1.6-5.4 4.7 1.6 7-6.2-3.7-6.2 3.7 1.6-7L2 9.2l7.1-.6z'/%3E%3C/g%3E%3C/svg%3E");
   --pattern-size: 36px 36px;
@@ -168,7 +193,6 @@
   --rim-rgb: 246, 255, 250;
   --shade-rgb: 108, 148, 126;
   --print-ink: 255, 255, 255;
-  --wordmark-color: 70, 120, 90;
   --wordmark-halo: 40, 90, 60;
   --pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='26' height='26'%3E%3Cg fill='%23ffffff' fill-opacity='0.5'%3E%3Ccircle cx='6.5' cy='6.5' r='1.9'/%3E%3Ccircle cx='19.5' cy='19.5' r='1.9'/%3E%3C/g%3E%3C/svg%3E");
   --pattern-size: 26px 26px;
@@ -201,7 +225,6 @@
   --shade-rgb: 0, 0, 0;
   --well-shade: 0, 0, 0;
   --print-ink: 226, 235, 250;
-  --wordmark-color: 150, 160, 180;
   --wordmark-halo: 0, 0, 0;
   --pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='44' height='44'%3E%3Cg fill='%23e6edfb' fill-opacity='0.5'%3E%3Cpath transform='translate(4 4) scale(0.45)' d='M12 2L13.8 10.2 22 12 13.8 13.8 12 22 10.2 13.8 2 12 10.2 10.2Z'/%3E%3Cpath transform='translate(27 27) scale(0.3)' d='M12 2L13.8 10.2 22 12 13.8 13.8 12 22 10.2 13.8 2 12 10.2 10.2Z'/%3E%3C/g%3E%3C/svg%3E");
   --pattern-size: 44px 44px;
@@ -376,19 +399,55 @@ body {
  * lower edge. That is what makes it read as moulded rather than printed. */
 .wordmark {
   position: absolute;
-  top: 84px;
+  top: 83px;
   left: 0;
   right: 0;
-  text-align: center;
-  font: 700 10px/1 "Helvetica Neue", Helvetica, Arial, sans-serif;
-  letter-spacing: 3.2px;
-  color: rgb(var(--wordmark-color));
-  text-shadow:
-    0 1px 0 rgba(var(--rim-rgb), 0.5),
-    0 -1px 0 rgba(var(--shade-rgb), 0.2),
-    0 0 3px rgba(var(--wordmark-halo), 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  font: 800 11px/1 "Helvetica Neue", Helvetica, Arial, sans-serif;
+  letter-spacing: 2.8px;
   z-index: 2;
   pointer-events: none;
+}
+
+/* Candy lettering. The gradient is clipped to the glyphs, and the small
+ * hearts either side pick up two of its colours, so the name reads as a
+ * printed badge rather than a line of grey type. */
+.wordmark span {
+  background-image: linear-gradient(
+    93deg,
+    #ff8fba 0%,
+    #ffcf74 34%,
+    #7bdfbf 67%,
+    #8ab6ff 100%
+  );
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  padding-left: 3px;
+  filter: drop-shadow(0 1px 0 rgba(255, 255, 255, 0.22))
+    drop-shadow(0 0 3px rgba(0, 0, 0, 0.5));
+}
+
+.wordmark::before,
+.wordmark::after {
+  content: "";
+  flex: none;
+  width: 9px;
+  height: 8px;
+  background: center / contain no-repeat;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.35));
+}
+
+.wordmark::before {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23ff8fba' d='M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z'/%3E%3C/svg%3E");
+}
+
+.wordmark::after {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%237bdfbf' d='M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z'/%3E%3C/svg%3E");
 }
 
 /* The recess that the glass sits in. */
@@ -515,8 +574,8 @@ body {
 
 .tama-btn {
   position: relative;
-  width: 36px;
-  height: 32px;
+  width: 34px;
+  height: 34px;
   padding: 0;
   border: 0;
   border-radius: 50%;
