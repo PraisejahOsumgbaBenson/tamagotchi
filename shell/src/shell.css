@@ -34,6 +34,8 @@
   --pattern: none;
   --pattern-size: 40px 40px;
   --print-ink: 124, 99, 70;
+  --wordmark-color: 124, 99, 70;
+  --wordmark-halo: 255, 255, 255;
 
   /* Colours for the moulded edges. The rim catches the light, the shade is
    * the plastic turning away from it, and the well is the shadow inside the
@@ -79,8 +81,10 @@
   --shade-rgb: 0, 0, 0;
   --well-shade: 0, 0, 0;
   --print-ink: 255, 255, 255;
-  --pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='30' height='30'%3E%3Cg fill='%23ffffff' fill-opacity='0.92'%3E%3Ccircle cx='7.5' cy='7.5' r='3.4'/%3E%3Ccircle cx='22.5' cy='22.5' r='3.4'/%3E%3C/g%3E%3C/svg%3E");
-  --pattern-size: 30px 30px;
+  --wordmark-color: 150, 150, 156;
+  --wordmark-halo: 0, 0, 0;
+  --pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Cg fill='%23ffffff' fill-opacity='0.95'%3E%3Ccircle cx='10' cy='10' r='6.2'/%3E%3Ccircle cx='30' cy='30' r='6.2'/%3E%3C/g%3E%3C/svg%3E");
+  --pattern-size: 40px 40px;
 }
 
 /* The same print inverted: a white body with black dots and black buttons. */
@@ -101,8 +105,10 @@
   --shade-rgb: 96, 89, 80;
   --well-shade: 46, 41, 36;
   --print-ink: 22, 22, 25;
-  --pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='30' height='30'%3E%3Cg fill='%23171719' fill-opacity='0.86'%3E%3Ccircle cx='7.5' cy='7.5' r='3.4'/%3E%3Ccircle cx='22.5' cy='22.5' r='3.4'/%3E%3C/g%3E%3C/svg%3E");
-  --pattern-size: 30px 30px;
+  --wordmark-color: 96, 96, 100;
+  --wordmark-halo: 255, 255, 255;
+  --pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Cg fill='%23171719' fill-opacity='0.9'%3E%3Ccircle cx='10' cy='10' r='6.2'/%3E%3Ccircle cx='30' cy='30' r='6.2'/%3E%3C/g%3E%3C/svg%3E");
+  --pattern-size: 40px 40px;
 }
 
 .device[data-theme="sakura"] {
@@ -120,6 +126,8 @@
   --rim-rgb: 255, 248, 250;
   --shade-rgb: 178, 111, 128;
   --print-ink: 255, 255, 255;
+  --wordmark-color: 138, 84, 100;
+  --wordmark-halo: 116, 56, 76;
   --pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Cg fill='%23ffffff' fill-opacity='0.5'%3E%3Cpath transform='translate(2 2) scale(0.55)' d='M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z'/%3E%3Cpath transform='translate(20 20) scale(0.55)' d='M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z'/%3E%3C/g%3E%3C/svg%3E");
   --pattern-size: 40px 40px;
 }
@@ -139,6 +147,8 @@
   --rim-rgb: 246, 252, 255;
   --shade-rgb: 110, 145, 172;
   --print-ink: 255, 255, 255;
+  --wordmark-color: 72, 112, 150;
+  --wordmark-halo: 40, 80, 120;
   --pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='36'%3E%3Cg fill='%23ffffff' fill-opacity='0.55'%3E%3Cpath transform='translate(2 2) scale(0.5)' d='M12 2l2.9 6.6 7.1.6-5.4 4.7 1.6 7-6.2-3.7-6.2 3.7 1.6-7L2 9.2l7.1-.6z'/%3E%3Cpath transform='translate(20 20) scale(0.5)' d='M12 2l2.9 6.6 7.1.6-5.4 4.7 1.6 7-6.2-3.7-6.2 3.7 1.6-7L2 9.2l7.1-.6z'/%3E%3C/g%3E%3C/svg%3E");
   --pattern-size: 36px 36px;
 }
@@ -158,6 +168,8 @@
   --rim-rgb: 246, 255, 250;
   --shade-rgb: 108, 148, 126;
   --print-ink: 255, 255, 255;
+  --wordmark-color: 70, 120, 90;
+  --wordmark-halo: 40, 90, 60;
   --pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='26' height='26'%3E%3Cg fill='%23ffffff' fill-opacity='0.5'%3E%3Ccircle cx='6.5' cy='6.5' r='1.9'/%3E%3Ccircle cx='19.5' cy='19.5' r='1.9'/%3E%3C/g%3E%3C/svg%3E");
   --pattern-size: 26px 26px;
 }
@@ -189,6 +201,8 @@
   --shade-rgb: 0, 0, 0;
   --well-shade: 0, 0, 0;
   --print-ink: 226, 235, 250;
+  --wordmark-color: 150, 160, 180;
+  --wordmark-halo: 0, 0, 0;
   --pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='44' height='44'%3E%3Cg fill='%23e6edfb' fill-opacity='0.5'%3E%3Cpath transform='translate(4 4) scale(0.45)' d='M12 2L13.8 10.2 22 12 13.8 13.8 12 22 10.2 13.8 2 12 10.2 10.2Z'/%3E%3Cpath transform='translate(27 27) scale(0.3)' d='M12 2L13.8 10.2 22 12 13.8 13.8 12 22 10.2 13.8 2 12 10.2 10.2Z'/%3E%3C/g%3E%3C/svg%3E");
   --pattern-size: 44px 44px;
 }
@@ -368,10 +382,11 @@ body {
   text-align: center;
   font: 700 10px/1 "Helvetica Neue", Helvetica, Arial, sans-serif;
   letter-spacing: 3.2px;
-  color: rgba(var(--print-ink), 0.5);
+  color: rgb(var(--wordmark-color));
   text-shadow:
-    0 1px 0 rgba(var(--rim-rgb), 0.55),
-    0 -1px 0 rgba(var(--shade-rgb), 0.18);
+    0 1px 0 rgba(var(--rim-rgb), 0.5),
+    0 -1px 0 rgba(var(--shade-rgb), 0.2),
+    0 0 3px rgba(var(--wordmark-halo), 0.35);
   z-index: 2;
   pointer-events: none;
 }
@@ -415,6 +430,7 @@ body {
   inset: -9px;
   border: 1.5px solid rgba(var(--print-ink), 0.38);
   border-radius: 24px;
+  box-shadow: 0 0 0 1px rgba(var(--wordmark-halo), 0.25);
   pointer-events: none;
 }
 
@@ -493,34 +509,36 @@ body {
   width: 100%;
   display: flex;
   justify-content: center;
-  gap: 22px;
+  gap: 20px;
   z-index: 2;
 }
 
 .tama-btn {
   position: relative;
-  width: 32px;
+  width: 36px;
   height: 32px;
   padding: 0;
   border: 0;
   border-radius: 50%;
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  color: rgba(var(--button-ink), 0.72);
-  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.75);
+  font-family: ui-rounded, "SF Pro Rounded", "Helvetica Neue", Helvetica, Arial,
+    sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0;
+  color: rgba(var(--button-ink), 0.8);
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.55);
   background: radial-gradient(
-    120% 120% at 34% 24%,
+    115% 115% at 32% 20%,
     var(--button-light) 0%,
-    var(--button-mid) 52%,
+    var(--button-mid) 50%,
     var(--button-dark) 100%
   );
   box-shadow:
-    inset 0 -2px 4px rgba(var(--btn-shade), 0.45),
-    inset 0 2px 2px rgba(255, 255, 255, 0.55),
-    0 0 0 1.5px rgba(var(--btn-socket), 0.4),
-    0 3px 5px rgba(var(--btn-socket), 0.42),
+    inset 0 -3px 5px rgba(var(--btn-shade), 0.45),
+    inset 0 2px 2px rgba(255, 255, 255, 0.7),
+    0 0 0 2px rgba(var(--btn-socket), 0.26),
+    0 0 0 3px rgba(var(--rim-rgb), 0.16),
+    0 4px 6px rgba(var(--btn-socket), 0.4),
     0 1px 0 rgba(var(--rim-rgb), 0.4);
   cursor: pointer;
   transition:
@@ -528,21 +546,34 @@ body {
     box-shadow 60ms ease-out;
 }
 
-/* The wet highlight sitting on the top left of the dome. The radial
- * background alone is too even to read as a solid button. */
+/* The wet highlight on the dome. A soft pool and one sharp point, because a
+ * single even glow is what makes a button look like a flat disc. */
 .tama-btn::before {
   content: "";
   position: absolute;
-  left: 20%;
-  top: 13%;
-  width: 46%;
-  height: 30%;
+  left: 17%;
+  top: 8%;
+  width: 52%;
+  height: 40%;
   border-radius: 50%;
   background: radial-gradient(
     closest-side,
-    rgba(255, 255, 255, 0.62),
-    rgba(255, 255, 255, 0)
+    rgba(255, 255, 255, 0.7),
+    rgba(255, 255, 255, 0) 100%
   );
+  pointer-events: none;
+}
+
+.tama-btn::after {
+  content: "";
+  position: absolute;
+  left: 27%;
+  top: 15%;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 0 3px rgba(255, 255, 255, 0.6);
   pointer-events: none;
 }
 
@@ -552,8 +583,8 @@ body {
   box-shadow:
     inset 0 2px 5px rgba(var(--btn-shade), 0.55),
     inset 0 1px 1px rgba(255, 255, 255, 0.35),
-    0 0 0 1.5px rgba(var(--btn-socket), 0.4),
-    0 1px 2px rgba(var(--btn-socket), 0.35);
+    0 0 0 2px rgba(var(--btn-socket), 0.26),
+    0 2px 3px rgba(var(--btn-socket), 0.35);
 }
 
 /* The device lifts off the desk very slightly and comes back down. */
