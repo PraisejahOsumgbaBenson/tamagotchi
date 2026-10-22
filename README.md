@@ -13,6 +13,8 @@ canvas and your brain says "simulation". Render it on 32 by 16 pixels with
 visible gaps between the cells, an olive STN backlight and a glass reflection,
 and your brain says "Tamagotchi" before it registers a single pixel.
 
+![The white and black polka shells](docs/images/hero.png)
+
 ## Running it
 
 ```bash
@@ -26,6 +28,15 @@ thing to quit. Quit with Command Q, or by right clicking the device. That same
 menu carries the shell designs: White Polka, Black Polka, Sakura, Sky, Mint,
 Cream and Midnight. The choice is remembered with the window position. The
 device opens in White Polka: a glossy white body with black dots.
+
+## The shells
+
+| White Polka, the default | Black Polka |
+| --- | --- |
+| ![White Polka](docs/images/white-polka.png) | ![Black Polka](docs/images/black-polka.png) |
+
+Five more designs ship in the right-click menu: Sakura, Sky, Mint, Cream and
+Midnight.
 
 ## How it fits together
 
