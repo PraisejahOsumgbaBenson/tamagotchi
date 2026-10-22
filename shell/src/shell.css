@@ -15,10 +15,12 @@
   --glass-width: 148px;
   --glass-height: 150px;
 
-  --plastic-light: #fdfbf9;
-  --plastic-mid: #f0e9e5;
-  --plastic-dark: #d9cbc6;
-  --plastic-shade: #b6a29c;
+  /* Warm ivory, not white. The original is a cream plastic that goes a shade
+   * deeper at the bottom, where the light stops reaching. */
+  --plastic-light: #fbf4e6;
+  --plastic-mid: #efe4cf;
+  --plastic-dark: #dbcbb1;
+  --plastic-shade: #bda98a;
 
   --button-light: #ffe9ed;
   --button-mid: #f6b9c7;
@@ -105,16 +107,16 @@ body {
   background: linear-gradient(
     158deg,
     var(--plastic-light) 0%,
-    #f6f1ed 22%,
-    var(--plastic-mid) 52%,
+    #f7eedc 20%,
+    var(--plastic-mid) 50%,
     var(--plastic-dark) 82%,
     var(--plastic-shade) 100%
   );
   box-shadow:
-    inset 0 2px 2px rgba(255, 255, 255, 0.95),
-    inset 0 -8px 12px rgba(122, 98, 90, 0.22),
-    inset 4px 0 10px rgba(255, 255, 255, 0.55),
-    inset -4px 0 10px rgba(122, 98, 90, 0.12);
+    inset 0 2px 2px rgba(255, 252, 244, 0.75),
+    inset 0 -16px 22px rgba(126, 101, 74, 0.22),
+    inset 4px 0 12px rgba(255, 250, 238, 0.4),
+    inset -5px 0 14px rgba(126, 101, 74, 0.16);
   /* The shadow has to come from a filter rather than a box shadow, because
    * the clip path would swallow one. */
   filter: drop-shadow(0 14px 13px rgba(56, 40, 34, 0.24))
@@ -140,33 +142,24 @@ body {
 /* The soft highlight across the top left of the body.
  *
  * Two parts: a bright rim where the plastic catches the light along the top
- * edge, and a broad, weak sheen over the upper left. Keep the sheen weak:
- * anything stronger washes out the eggshell print underneath it. */
+ * edge, and a broad, weak sheen over the upper left. Keep the sheen weak so
+ * the shell keeps its colour instead of blowing out to white. */
 .device::before {
   content: "";
   position: absolute;
   inset: 0;
   background:
     radial-gradient(
-      62% 9% at 40% 0%,
-      rgba(255, 255, 255, 0.8) 0%,
-      rgba(255, 255, 255, 0) 72%
+      58% 8% at 40% 0%,
+      rgba(255, 252, 242, 0.62) 0%,
+      rgba(255, 252, 242, 0) 70%
     ),
     radial-gradient(
-      88% 52% at 20% 10%,
-      rgba(255, 255, 255, 0.22) 0%,
-      rgba(255, 255, 255, 0.06) 45%,
-      rgba(255, 255, 255, 0) 68%
+      86% 50% at 20% 10%,
+      rgba(255, 250, 236, 0.16) 0%,
+      rgba(255, 250, 236, 0.04) 45%,
+      rgba(255, 250, 236, 0) 68%
     );
-  pointer-events: none;
-}
-
-/* The cracked eggshell print around the glass. */
-.eggshell {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
   pointer-events: none;
 }
 
