@@ -68,7 +68,7 @@ the shell.
 | Piezo audio through WebAudio | Working |
 | Floating always-on-top window, drag to move | Working |
 | Engine protocol, save states, clock sync | Working |
-| Pet behaviour engine, clock screen, mute, mini game | Working, not the real ROM |
+| Pet behaviour engine: egg and hatch, feeding, moods, clock, mute, mini game | Working, not the real ROM |
 | Epson E0C6S46 emulation with the original ROM | Next |
 
 The behaviour engine is a stand in for the real thing. It speaks the same

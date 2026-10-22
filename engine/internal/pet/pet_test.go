@@ -1,6 +1,7 @@
 package pet
 
 import (
+	"slices"
 	"testing"
 	"time"
 
@@ -9,8 +10,69 @@ import (
 
 var epoch = time.Date(2026, 10, 22, 12, 0, 0, 0, time.UTC)
 
-func TestMenuSelection(t *testing.T) {
+func TestThePetStartsAsAnEgg(t *testing.T) {
 	p := New(epoch)
+
+	if p.Stage != StageEgg {
+		t.Fatalf("stage = %v, want egg", p.Stage)
+	}
+
+	// The buttons do nothing while it is an egg, which is what the original
+	// does. The egg rocks instead.
+	p.SetButtons(false, true, false, epoch)
+	p.Tick(epoch.Add(time.Second))
+	if p.View != ViewMain {
+		t.Errorf("a press opened %v on an egg", p.View)
+	}
+}
+
+func TestTheEggHatches(t *testing.T) {
+	p := New(epoch)
+
+	p.Tick(epoch.Add(hatchInterval - time.Second))
+	if p.Stage != StageEgg {
+		t.Fatalf("the egg hatched early, at %v", hatchInterval-time.Second)
+	}
+
+	p.Tick(epoch.Add(hatchInterval + time.Second))
+	if p.Stage != StageBaby {
+		t.Fatalf("stage = %v, want baby", p.Stage)
+	}
+	if p.Hunger != 4 || p.Happy != 4 {
+		t.Errorf("the newborn arrived at hunger %d, happy %d", p.Hunger, p.Happy)
+	}
+}
+
+func TestAnEggLeftAloneHatchesAlive(t *testing.T) {
+	p := New(epoch)
+
+	// The app was quit for a day while it was still an egg.
+	p.Tick(epoch.Add(24 * time.Hour))
+
+	if p.Stage != StageBaby {
+		t.Fatalf("stage = %v, want baby", p.Stage)
+	}
+	if p.Hunger == 0 {
+		t.Error("the newborn hatched already starving")
+	}
+}
+
+func TestTheEggRocks(t *testing.T) {
+	p := New(epoch)
+
+	resting := lcd.Screen{}
+	p.Render(&resting, epoch.Add(3*time.Second))
+
+	leaning := lcd.Screen{}
+	p.Render(&leaning, epoch.Add(100*time.Millisecond))
+
+	if slices.Equal(resting.Rows(), leaning.Rows()) {
+		t.Error("the egg never moves")
+	}
+}
+
+func TestMenuSelection(t *testing.T) {
+	p := newBaby(epoch)
 
 	if p.Selected != -1 {
 		t.Fatalf("nothing should be selected at the start, got %d", p.Selected)
@@ -33,7 +95,7 @@ func TestMenuSelection(t *testing.T) {
 }
 
 func TestSelectionCyclesThroughEveryMenuIcon(t *testing.T) {
-	p := New(epoch)
+	p := newBaby(epoch)
 
 	p.Press(ButtonA, epoch)
 	for i := 1; i < len(MenuIcons); i++ {
@@ -50,7 +112,7 @@ func TestSelectionCyclesThroughEveryMenuIcon(t *testing.T) {
 }
 
 func TestFeedingAMeal(t *testing.T) {
-	p := New(epoch)
+	p := newBaby(epoch)
 	p.Hunger = 2
 	p.Weight = 30
 
@@ -74,7 +136,7 @@ func TestFeedingAMeal(t *testing.T) {
 }
 
 func TestAFullPetRefusesToEat(t *testing.T) {
-	p := New(epoch)
+	p := newBaby(epoch)
 	p.Hunger = 4
 	p.Weight = 30
 
@@ -93,8 +155,57 @@ func TestAFullPetRefusesToEat(t *testing.T) {
 	}
 }
 
+func TestARefusedMealShakesThePet(t *testing.T) {
+	p := newBaby(epoch)
+	p.Hunger = 4
+	p.View = ViewFeed
+	p.Choice = 0
+
+	p.Press(ButtonB, epoch) // refused, back to the main screen
+
+	var early, late lcd.Screen
+	p.Render(&early, epoch.Add(10*time.Millisecond))
+	p.Render(&late, epoch.Add(130*time.Millisecond))
+
+	// The face alone is not enough to read a refusal on a mono screen,
+	// so the pet moves. A still pet looks like a dropped button press.
+	if slices.Equal(early.Rows(), late.Rows()) {
+		t.Error("the refusal does not move")
+	}
+}
+
+func TestTheGameShowsBothChoices(t *testing.T) {
+	p := newBaby(epoch)
+	p.View = ViewPlay
+
+	var s lcd.Screen
+	p.Render(&s, epoch)
+
+	if !s.Pixel(1, 8) {
+		t.Error("the left arrow is missing")
+	}
+	if !s.Pixel(31, 8) {
+		t.Error("the right arrow is missing")
+	}
+}
+
+func TestAGuessIsVisible(t *testing.T) {
+	p := newBaby(epoch)
+	p.View = ViewPlay
+	p.GameTarget = 0
+
+	p.Press(ButtonA, epoch)
+
+	if p.Mood != MoodHappy {
+		t.Errorf("a correct guess left the pet in mood %v", p.Mood)
+	}
+	if !p.MoodUntil.After(epoch) {
+		t.Error("the result has no time on screen")
+	}
+}
+
 func TestASnackFillsHappinessAndWeighsMore(t *testing.T) {
-	p := New(epoch)
+	p := newBaby(epoch)
 	p.Happy = 2
 	p.Weight = 30
 
@@ -115,7 +226,7 @@ func TestASnackFillsHappinessAndWeighsMore(t *testing.T) {
 }
 
 func TestTheDuckCleansUp(t *testing.T) {
-	p := New(epoch)
+	p := newBaby(epoch)
 	p.Poops = 3
 
 	p.Press(ButtonA, epoch) // feed
@@ -132,7 +243,7 @@ func TestTheDuckCleansUp(t *testing.T) {
 }
 
 func TestTheMeterCyclesThroughFourPages(t *testing.T) {
-	p := New(epoch)
+	p := newBaby(epoch)
 
 	meter := -1
 	for i, ic := range MenuIcons {
@@ -168,7 +279,7 @@ func TestTheMeterCyclesThroughFourPages(t *testing.T) {
 }
 
 func TestHungerRunsOut(t *testing.T) {
-	p := New(epoch)
+	p := newBaby(epoch)
 	p.Hunger = 2
 
 	p.Tick(epoch.Add(hungerInterval))
@@ -183,7 +294,7 @@ func TestHungerRunsOut(t *testing.T) {
 }
 
 func TestThePetCallsWhenItIsHungry(t *testing.T) {
-	p := New(epoch)
+	p := newBaby(epoch)
 	p.Hunger = 0
 
 	p.Tick(epoch)
@@ -196,7 +307,7 @@ func TestThePetCallsWhenItIsHungry(t *testing.T) {
 }
 
 func TestTheCallStops(t *testing.T) {
-	p := New(epoch)
+	p := newBaby(epoch)
 	p.Hunger = 0
 	p.Tick(epoch)
 
@@ -207,7 +318,7 @@ func TestTheCallStops(t *testing.T) {
 }
 
 func TestThePetGrowsAndAges(t *testing.T) {
-	p := New(epoch)
+	p := newBaby(epoch)
 	now := epoch
 
 	// The pet is walked through its life a step at a time, the way the engine
@@ -227,7 +338,7 @@ func TestThePetGrowsAndAges(t *testing.T) {
 
 func TestThePetSleepsAtNight(t *testing.T) {
 	night := time.Date(2026, 10, 22, 23, 0, 0, 0, time.UTC)
-	p := New(night)
+	p := newBaby(night)
 
 	p.Tick(night)
 	if !p.Asleep {
@@ -245,7 +356,7 @@ func TestThePetSleepsAtNight(t *testing.T) {
 }
 
 func TestRenderIsDeterministic(t *testing.T) {
-	p := New(epoch)
+	p := newBaby(epoch)
 
 	var a, b lcd.Screen
 	p.Render(&a, epoch)
@@ -260,7 +371,7 @@ func TestRenderIsDeterministic(t *testing.T) {
 }
 
 func TestRenderLightsTheAttentionIcon(t *testing.T) {
-	p := New(epoch)
+	p := newBaby(epoch)
 	p.Hunger = 0
 	p.Tick(epoch)
 
@@ -272,7 +383,7 @@ func TestRenderLightsTheAttentionIcon(t *testing.T) {
 }
 
 func TestRenderMarksTheSelectedMenuIcon(t *testing.T) {
-	p := New(epoch)
+	p := newBaby(epoch)
 	p.Press(ButtonA, epoch)
 
 	var s lcd.Screen
@@ -283,7 +394,7 @@ func TestRenderMarksTheSelectedMenuIcon(t *testing.T) {
 }
 
 func TestHoldingAButtonDoesNotActTwice(t *testing.T) {
-	p := New(epoch)
+	p := newBaby(epoch)
 
 	p.SetButtons(true, false, false, epoch)
 	p.SetButtons(true, false, false, epoch.Add(comboWindow))
@@ -300,7 +411,7 @@ func TestHoldingAButtonDoesNotActTwice(t *testing.T) {
 }
 
 func TestAWithCMutesTheSound(t *testing.T) {
-	p := New(epoch)
+	p := newBaby(epoch)
 
 	p.SetButtons(true, false, false, epoch)
 	p.SetButtons(true, false, true, epoch.Add(10*time.Millisecond))
@@ -314,7 +425,7 @@ func TestAWithCMutesTheSound(t *testing.T) {
 }
 
 func TestAFreshPetDoesNotCallStraightAway(t *testing.T) {
-	p := New(epoch)
+	p := newBaby(epoch)
 
 	// The engine ticks the pet at the frame rate. Rolling the dice on every
 	// one of those ticks had the pet calling for attention within a second of
@@ -332,7 +443,7 @@ func TestAFreshPetDoesNotCallStraightAway(t *testing.T) {
 }
 
 func TestAMessStartsAgingWhenItAppears(t *testing.T) {
-	p := New(epoch)
+	p := newBaby(epoch)
 
 	// The first mess arrives one poop interval in.
 	p.Tick(epoch.Add(poopIntervalBaby + time.Second))
@@ -349,7 +460,7 @@ func TestAMessStartsAgingWhenItAppears(t *testing.T) {
 }
 
 func TestALongAbsenceDoesNotKillThePet(t *testing.T) {
-	p := New(epoch)
+	p := newBaby(epoch)
 
 	// The laptop lid was shut for a night.
 	p.Tick(epoch.Add(8 * time.Hour))
@@ -363,7 +474,7 @@ func TestALongAbsenceDoesNotKillThePet(t *testing.T) {
 }
 
 func TestAQuickTapActsWithoutWaitingOutTheComboWindow(t *testing.T) {
-	p := New(epoch)
+	p := newBaby(epoch)
 
 	// Down and up inside one frame, which is what the engine hands over
 	// when the two reports arrive between frames.
@@ -376,7 +487,7 @@ func TestAQuickTapActsWithoutWaitingOutTheComboWindow(t *testing.T) {
 }
 
 func TestAAndCInOneFrameMutes(t *testing.T) {
-	p := New(epoch)
+	p := newBaby(epoch)
 
 	// Both presses arrive in the same frame, so there is no window to wait
 	// out.
@@ -391,7 +502,7 @@ func TestAAndCInOneFrameMutes(t *testing.T) {
 }
 
 func TestTheClockScreenShowsTheTime(t *testing.T) {
-	p := New(epoch)
+	p := newBaby(epoch)
 
 	p.SetButtons(false, true, false, epoch)
 	if p.View != ViewClock {
@@ -417,7 +528,7 @@ func TestTheClockScreenShowsTheTime(t *testing.T) {
 }
 
 func TestTheClockCanBeSet(t *testing.T) {
-	p := New(epoch)
+	p := newBaby(epoch)
 	p.SetButtons(false, true, false, epoch) // the clock
 	p.SetButtons(true, false, false, epoch.Add(time.Millisecond))
 	p.SetButtons(true, false, true, epoch.Add(2*time.Millisecond))

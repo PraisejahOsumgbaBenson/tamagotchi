@@ -56,7 +56,14 @@ func (p *Pet) Render(s *lcd.Screen, now time.Time) (icons uint32, selected uint3
 
 // renderMain draws the character and whatever is happening around it.
 func (p *Pet) renderMain(s *lcd.Screen, now time.Time) {
-	s.DrawSprite(8, 0, p.face(now))
+	if p.Stage == StageEgg {
+		// A still egg reads as a screenshot. It leans over every few
+		// seconds, which is the only thing an egg can do.
+		s.DrawSprite(8+eggRock(now), 0, egg)
+		return
+	}
+
+	s.DrawSprite(8+motionX(p.Mood, now), motionY(p.Mood, now), p.face(now))
 
 	if p.Sick {
 		s.DrawSprite(24, 0, skull)
@@ -72,6 +79,62 @@ func (p *Pet) renderMain(s *lcd.Screen, now time.Time) {
 	}
 }
 
+// eggRock returns how far the egg has leaned, in pixels.
+//
+// It rocks for a moment, then rests, so the egg looks alive without looking
+// like it is being shaken.
+func eggRock(now time.Time) int {
+	const (
+		period = 4 * time.Second
+		rock   = 900 * time.Millisecond
+	)
+
+	phase := now.UnixMilli() % period.Milliseconds()
+	if phase >= rock.Milliseconds() {
+		return 0
+	}
+
+	third := rock.Milliseconds() / 3
+	switch {
+	case phase < third:
+		return -1
+	case phase < 2*third:
+		return 1
+	}
+	return 0
+}
+
+// motionX and motionY return how far the character has moved from its
+// resting spot.
+//
+// There are no shades of grey on the glass, so movement is the clearest
+// signal the pet has. A refusal is a shake, a meal is a chew, a snack is a
+// hop. Without this a fed pet and an ignored pet look the same.
+func motionX(m Mood, now time.Time) int {
+	ms := now.UnixMilli()
+	switch m {
+	case MoodEating:
+		return []int{-1, 0, 1, 0}[int(ms/140)%4]
+	case MoodSad:
+		return []int{-1, 1}[int(ms/110)%2]
+	case MoodSick:
+		return []int{-1, 0, 1, 0}[int(ms/500)%4]
+	case MoodHatching:
+		return []int{-1, 1}[int(ms/90)%2]
+	}
+	return 0
+}
+
+func motionY(m Mood, now time.Time) int {
+	if m != MoodHappy && m != MoodPlaying {
+		return 0
+	}
+	if (now.UnixMilli()/220)%3 == 0 {
+		return -1
+	}
+	return 0
+}
+
 // face picks the sprite for the pet's current mood and stage.
 func (p *Pet) face(now time.Time) lcd.Sprite {
 	if p.Stage == StageEgg {
@@ -79,6 +142,9 @@ func (p *Pet) face(now time.Time) lcd.Sprite {
 	}
 	if p.Dead() {
 		return babyDead
+	}
+	if p.Mood == MoodHatching {
+		return eggHatch
 	}
 
 	base := babyIdle
@@ -95,7 +161,11 @@ func (p *Pet) face(now time.Time) lcd.Sprite {
 	case MoodSad:
 		return babySad
 	case MoodEating:
-		return babyEat
+		// Chewing: the mouth opens and closes.
+		if (now.UnixMilli()/180)%2 == 0 {
+			return babyEat
+		}
+		return base
 	case MoodPlaying:
 		return base
 	}
@@ -191,16 +261,17 @@ func (p *Pet) renderPlay(s *lcd.Screen, now time.Time) {
 	s.DrawText(29, 6, ">")
 }
 
-// renderMedicine draws the medicine screen.
+// renderMedicine draws the medicine screen. The pet sits on the left, as it
+// does on the meter, so the label has the right hand side to itself.
 func (p *Pet) renderMedicine(s *lcd.Screen) {
-	s.DrawSprite(8, 0, babySick)
-	s.DrawText(4, 5, "MED")
+	s.DrawSprite(0, 0, babySick)
+	s.DrawText(17, 5, "MED")
 }
 
 // renderDuck draws the cleaning screen.
 func (p *Pet) renderDuck(s *lcd.Screen) {
-	s.DrawSprite(8, 0, babyIdle)
-	s.DrawText(4, 5, "DUCK")
+	s.DrawSprite(0, 0, babyIdle)
+	s.DrawText(17, 5, "DUCK")
 }
 
 // renderMeter draws one of the four status pages. The character sits on the

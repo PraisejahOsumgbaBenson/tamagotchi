@@ -119,23 +119,30 @@ func TestDrawTextFits(t *testing.T) {
 	}
 }
 
-func TestFillTextInverts(t *testing.T) {
-	var plain, inverted Screen
+func TestFillTextDrawsLettersInABar(t *testing.T) {
+	const text = "88"
 
-	plain.DrawText(0, 0, "8")
-	inverted.FillText(0, 0, "8")
+	var plain, bar Screen
+	plain.DrawText(0, 0, text)
+	bar.FillText(0, 0, text)
 
-	if plain.Equal(inverted) {
-		t.Error("the inverted text should differ from the plain text")
+	if plain.Equal(bar) {
+		t.Error("the bar text should differ from the plain text")
 	}
 
-	// The glyph pixels should be off and the box around them on.
+	// Every pixel of the block is lit except the letters, which are holes.
+	// The gap between the two glyphs is part of the block.
 	for y := 0; y < glyphHeight; y++ {
-		for x := 0; x < glyphWidth; x++ {
-			if inverted.Pixel(x, y) == plain.Pixel(x, y) {
-				t.Fatalf("pixel %d,%d was not inverted", x, y)
+		for x := 0; x < TextWidth(text); x++ {
+			want := !plain.Pixel(x, y)
+			if bar.Pixel(x, y) != want {
+				t.Fatalf("pixel %d,%d = %v, want %v", x, y, bar.Pixel(x, y), want)
 			}
 		}
+	}
+
+	if bar.Pixel(TextWidth(text), 0) {
+		t.Error("the block should stop at the end of the text")
 	}
 }
 
