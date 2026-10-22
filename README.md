@@ -23,9 +23,9 @@ make run
 `make run` builds the engine and opens the shell. The shell starts the engine
 and stops it again when it quits, so there is only one thing to launch and one
 thing to quit. Quit with Command Q, or by right clicking the device. That same
-menu carries the shell designs: Black Polka, White Polka, Sakura, Sky, Mint,
+menu carries the shell designs: White Polka, Black Polka, Sakura, Sky, Mint,
 Cream and Midnight. The choice is remembered with the window position. The
-device opens in Black Polka: a glossy black body with white dots.
+device opens in White Polka: a glossy white body with black dots.
 
 ## How it fits together
 
