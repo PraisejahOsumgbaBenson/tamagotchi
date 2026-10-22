@@ -113,6 +113,22 @@ const (
 	// How long a call for attention lasts.
 	callDuration = 15 * time.Minute
 
+	// How often the pet rolls the dice on its own mood.
+	//
+	// The engine ticks the pet at the frame rate, so a chance rolled every
+	// tick would come up almost immediately and the pet would spend its life
+	// asking for attention and falling ill. Once every half minute keeps the
+	// odds meaningful.
+	moodInterval = 30 * time.Second
+
+	// The most time a single tick will apply to the pet.
+	//
+	// The pet lives in a laptop that gets shut, and in an app that gets quit.
+	// Without a limit, coming back in the morning would apply eight hours of
+	// missed meals at once and the pet would be dead before the window drew.
+	// A long absence costs the pet a while, not its life.
+	catchUpLimit = 30 * time.Minute
+
 	// How long the device waits to see whether a second button is joining
 	// the first one.
 	comboWindow = 120 * time.Millisecond
@@ -157,16 +173,17 @@ type Pet struct {
 	GameCorrect int
 
 	// Transient state, cleared when its time is up.
-	Mood         Mood
-	MoodUntil    time.Time
-	FlashUntil   time.Time
-	LastHunger   time.Time
-	LastHappy    time.Time
-	LastAge      time.Time
-	LastPoop     time.Time
-	LastPoopSeen time.Time
-	AsleepSince  time.Time
-	WokeAt       time.Time
+	Mood          Mood
+	MoodUntil     time.Time
+	FlashUntil    time.Time
+	LastHunger    time.Time
+	LastHappy     time.Time
+	LastAge       time.Time
+	LastPoop      time.Time
+	LastPoopSeen  time.Time
+	LastMoodCheck time.Time
+	AsleepSince   time.Time
+	WokeAt        time.Time
 
 	// A small generator so the pet's whole state can be saved.
 	RNG rng
@@ -208,19 +225,21 @@ const (
 // New returns a pet that has just hatched.
 func New(now time.Time) *Pet {
 	p := &Pet{
-		Stage:      StageBaby,
-		Weight:     20,
-		Hunger:     4,
-		Happy:      4,
-		Sound:      true,
-		Light:      true,
-		Selected:   -1,
-		LastHunger: now,
-		LastHappy:  now,
-		LastAge:    now,
-		LastPoop:   now,
-		WokeAt:     now,
-		now:        now,
+		Stage:         StageBaby,
+		Weight:        20,
+		Hunger:        4,
+		Happy:         4,
+		Sound:         true,
+		Light:         true,
+		Selected:      -1,
+		LastHunger:    now,
+		LastHappy:     now,
+		LastAge:       now,
+		LastPoop:      now,
+		LastPoopSeen:  now,
+		LastMoodCheck: now,
+		WokeAt:        now,
+		now:           now,
 	}
 	p.RNG.state = 0x2545F4914F6CDD1D
 	return p
@@ -646,12 +665,55 @@ func (p *Pet) Tick(now time.Time) {
 		return
 	}
 
+	// A gap since the last tick is either an eye blink worth of frames or the
+	// laptop lid being closed for the night. Anything past the limit is
+	// brought forward so that the pet is fed by the passage of time rather
+	// than buried by it.
+	p.limitCatchUp(now)
+
+	// The mood rolls are done here rather than in every update, so that they
+	// happen once per mood interval instead of once per frame.
+	mood := false
+	if p.LastMoodCheck.IsZero() || now.Sub(p.LastMoodCheck) >= moodInterval {
+		p.LastMoodCheck = now
+		mood = true
+	}
+
 	p.updateSleep(now)
 	p.updateHunger(now)
 	p.updateHappy(now)
 	p.updateAge(now)
-	p.updatePoop(now)
-	p.updateCall(now)
+	p.updatePoop(now, mood)
+	p.updateCall(now, mood)
+}
+
+// limitCatchUp shortens a long gap between ticks.
+//
+// LastMoodCheck doubles as the record of when the pet was last seen, because
+// it is the only clock in the state that is written on every tick.
+func (p *Pet) limitCatchUp(now time.Time) {
+	if p.LastMoodCheck.IsZero() {
+		return
+	}
+	gap := now.Sub(p.LastMoodCheck)
+	if gap <= catchUpLimit {
+		return
+	}
+
+	over := gap - catchUpLimit
+	clocks := []*time.Time{
+		&p.LastHunger,
+		&p.LastHappy,
+		&p.LastAge,
+		&p.LastPoop,
+		&p.LastPoopSeen,
+		&p.LastMoodCheck,
+	}
+	for _, clock := range clocks {
+		if !clock.IsZero() {
+			*clock = clock.Add(over)
+		}
+	}
 }
 
 // updateSleep puts the pet to bed at night and wakes it in the morning.
@@ -727,7 +789,7 @@ func (p *Pet) updateStage() {
 
 // updatePoop makes a mess now and then, and lets the pet get sick if the
 // mess is left alone.
-func (p *Pet) updatePoop(now time.Time) {
+func (p *Pet) updatePoop(now time.Time, mood bool) {
 	if p.Asleep {
 		return
 	}
@@ -741,18 +803,22 @@ func (p *Pet) updatePoop(now time.Time) {
 		p.LastPoop = p.LastPoop.Add(interval)
 		if p.Poops < 4 {
 			p.Poops++
+			// The mess starts aging the moment it appears, not when the pet
+			// was born.
+			p.LastPoopSeen = now
 		}
 	}
 
-	if p.Poops > 0 && now.Sub(p.LastPoopSeen) >= sickAfterPoop {
-		if !p.Sick && p.RNG.intn(4) == 0 {
-			p.Sick = true
-		}
+	if !mood || p.Poops == 0 || p.Sick {
+		return
+	}
+	if now.Sub(p.LastPoopSeen) >= sickAfterPoop && p.RNG.intn(4) == 0 {
+		p.Sick = true
 	}
 }
 
 // updateCall makes the pet call for attention when it needs something.
-func (p *Pet) updateCall(now time.Time) {
+func (p *Pet) updateCall(now time.Time, mood bool) {
 	if p.Calling {
 		if now.After(p.CallUntil) {
 			p.clearCall()
@@ -772,7 +838,7 @@ func (p *Pet) updateCall(now time.Time) {
 		reason = ReasonNone
 	}
 
-	if reason == ReasonNone {
+	if reason == ReasonNone && mood {
 		// A pet with nothing wrong sometimes calls anyway. Being disciplined
 		// stops it.
 		if p.Hunger > 0 && p.Happy > 0 && !p.Asleep && p.Discipline < 2 && p.RNG.intn(20) == 0 {
