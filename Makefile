@@ -37,18 +37,17 @@ vet: ## Vet the Go sources
 check: fmt vet test ## Format, vet and test in one go
 
 .PHONY: run
-run: build ## Run the engine and the shell together
-	@./dist/tama-engine & \
-	engine=$$!; \
-	trap 'kill $$engine 2>/dev/null; wait $$engine 2>/dev/null' EXIT INT TERM; \
+run: build ## Run the app
+	@# The shell starts the engine itself, so this is the whole app.
 	cd $(SHELL_DIR) && $(BUN) run start
 
 .PHONY: debug
 debug: build ## Run the app with the DevTools port open on 9222
-	@./dist/tama-engine & \
-	engine=$$!; \
-	trap 'kill $$engine 2>/dev/null; wait $$engine 2>/dev/null' EXIT INT TERM; \
 	cd $(SHELL_DIR) && $(BUN) run debug
+
+.PHONY: engine
+engine: build ## Run the engine alone, without a window
+	./dist/tama-engine
 
 .PHONY: rom
 rom: ## Fetch and verify the Tamagotchi P1 ROM (set ROM_URL first)

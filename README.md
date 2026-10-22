@@ -20,8 +20,9 @@ make deps
 make run
 ```
 
-`make run` builds the engine, starts it, and opens the shell. Quitting the
-shell stops the engine too.
+`make run` builds the engine and opens the shell. The shell starts the engine
+and stops it again when it quits, so there is only one thing to launch and one
+thing to quit. Quit with Command Q, or by right clicking the device.
 
 ## How it fits together
 

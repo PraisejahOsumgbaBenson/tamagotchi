@@ -15,4 +15,7 @@ contextBridge.exposeInMainWorld("tama", {
 
   // save writes out where the device is on the desktop.
   save: () => ipcRenderer.send("tama:save"),
+
+  // menu opens the little menu that holds the way out of the app.
+  menu: () => ipcRenderer.send("tama:menu"),
 });

@@ -49,6 +49,11 @@ The split is what makes the engine portable. The same Go package that drives
 the desktop build compiles to WebAssembly for a browser version and to TinyGo
 for an ESP32 with a small OLED. Neither target needs the shell.
 
+The shell starts the engine as a child process and stops it on the way out.
+Two processes, one thing to launch. Running the shell without the engine is
+an empty screen with no explanation, which is indistinguishable from a broken
+pet, so that combination is not offered to anyone.
+
 ## The protocol
 
 JSON over a WebSocket bound to 127.0.0.1. Text, not binary, because the
