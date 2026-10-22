@@ -17,9 +17,11 @@ and your brain says "Tamagotchi" before it registers a single pixel.
 
 ```bash
 make deps
-make build
 make run
 ```
+
+`make run` builds the engine, starts it, and opens the shell. Quitting the
+shell stops the engine too.
 
 ## How it fits together
 
@@ -60,11 +62,12 @@ the shell.
 |---|---|
 | Photoreal P1 shell in CSS | Working |
 | 32 by 16 LCD canvas with pixel grid | Working |
+| Eight status icons and the menu marker | Working |
 | Three buttons with press physics | Working |
 | Piezo audio through WebAudio | Working |
-| Floating always-on-top window | Working |
+| Floating always-on-top window, drag to move | Working |
 | Engine protocol, save states, clock sync | Working |
-| Pet behaviour engine | Working, not the real ROM |
+| Pet behaviour engine, clock screen, mute, mini game | Working, not the real ROM |
 | Epson E0C6S46 emulation with the original ROM | Next |
 
 The behaviour engine is a stand in for the real thing. It speaks the same

@@ -57,9 +57,10 @@ traffic is tiny and a human should be able to read it in a terminal.
 Engine to shell:
 
 ```json
-{"t": "frame", "rows": [12, 34, 56], "icons": 3}
+{"t": "frame", "rows": [12, 34, 56], "icons": 3, "sel": 1}
 {"t": "audio", "freq": 4200, "dur": 90}
 {"t": "hello", "version": 1}
+{"t": "clock", "epoch": 1790000000}
 ```
 
 Shell to engine:
@@ -72,10 +73,41 @@ Shell to engine:
 ```
 
 `rows` is 16 integers, one bitmask per row of the 32 by 16 screen. `icons` is
-a bitmask over the eight status icons the P1 has above the main area.
+a bitmask over the eight status icons. `sel` marks the menu icon that the pet
+has highlighted, so the shell can draw the marker on the glass. Nothing on
+the wire says what the marker should look like; that belongs to the shell.
 
-Frames are sent only when the screen actually changes. An idle pet costs
-almost nothing.
+Zero-valued fields are omitted, so a missing `icons` or `sel` means zero.
+
+Frames are sent only when the screen, the icons or the selection change. An
+idle pet costs almost nothing. That leaves one gap: a shell that connects
+while the screen is idle would see nothing at all, so the engine sends a
+snapshot of the current frame to every connection as it opens.
+
+## Buttons
+
+The shell reports the whole state of all three buttons, not a list of events.
+The engine turns that into presses.
+
+It keeps a latch on the presses that arrived since the last frame, because a
+tap can start and finish between two frames. Without the latch a quick tap is
+invisible. A button that went down and came back up is presented to the pet as
+still down for one frame, and released on the next.
+
+The pet acts on the press, not the release. It also has one combination, A
+with C, which mutes the sound. That is why a press of A on the main screen
+waits 120 milliseconds: it is checking whether C is joining it. If A comes
+back up first, the press is delivered then instead of waiting out the window.
+
+## The clock
+
+The shell tells the engine what time it is when it connects and every thirty
+seconds after that. The engine keeps its own offset from the wall clock.
+
+The device has a clock screen, reached by pressing B with no menu icon
+selected. Holding A and pressing C there enters the time set mode: A moves the
+hours, B moves the minutes, C confirms. That offset belongs to the pet, not to
+the engine, because it is part of what the pet is showing.
 
 ## Timing
 
