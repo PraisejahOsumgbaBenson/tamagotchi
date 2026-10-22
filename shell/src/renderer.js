@@ -225,10 +225,15 @@
   // ---- quitting ----
 
   // There is no dock icon and no title bar, so the device carries the only
-  // way out of the app that does not involve a terminal.
+  // way out of the app that does not involve a terminal. The same menu holds
+  // the shell designs, which the main process remembers and sends from here.
   device.addEventListener("contextmenu", (event) => {
     event.preventDefault();
     window.tama.menu();
+  });
+
+  window.tama.onTheme((name) => {
+    device.dataset.theme = name;
   });
 
   // ---- letting the mouse through ----

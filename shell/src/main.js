@@ -24,10 +24,25 @@ const DEVICE = { width: 276, height: 360 };
 // mouse grabs when the device is dragged around.
 const PADDING = 40;
 
-// POSITION_FILE remembers where the device was left on the desktop.
+// POSITION_FILE remembers where the device was left on the desktop and which
+// shell design it was wearing.
 const POSITION_FILE = () => path.join(app.getPath("userData"), "position.json");
 
+// THEMES names the shell designs the renderer knows how to paint. They have to
+// match the data-theme blocks in shell.css. The labels are the ones shown in
+// the right-click menu.
+const THEMES = [
+  { id: "sakura", label: "Sakura" },
+  { id: "sky", label: "Sky" },
+  { id: "mint", label: "Mint" },
+  { id: "classic", label: "Cream" },
+  { id: "midnight", label: "Midnight" },
+];
+
 let win = null;
+
+// theme is the shell design in use right now.
+let theme = "sakura";
 
 // engine is the pet, running as a child process.
 let engine = null;
@@ -76,22 +91,23 @@ function stopEngine() {
   }
 }
 
-// readPosition returns the last saved position of the device, or nil if there
-// is not one.
-function readPosition() {
+// readSettings returns the last saved position and shell design, or an empty
+// object if there is nothing saved yet.
+function readSettings() {
   try {
     const raw = fs.readFileSync(POSITION_FILE(), "utf8");
     const saved = JSON.parse(raw);
-    if (Number.isFinite(saved.x) && Number.isFinite(saved.y)) {
+    if (saved && typeof saved === "object") {
       return saved;
     }
   } catch {
-    // There is no saved position yet, which is the normal case.
+    // There is no saved settings file yet, which is the normal case.
   }
-  return null;
+  return {};
 }
 
-// writePosition remembers where the device is on the desktop.
+// writePosition remembers where the device is on the desktop and which shell
+// it is wearing.
 function writePosition() {
   if (!win) {
     return;
@@ -101,11 +117,23 @@ function writePosition() {
     fs.mkdirSync(path.dirname(POSITION_FILE()), { recursive: true });
     fs.writeFileSync(
       POSITION_FILE(),
-      JSON.stringify({ x, y }, null, 2) + "\n"
+      JSON.stringify({ x, y, theme }, null, 2) + "\n"
     );
   } catch (err) {
     console.error("tama: could not save the position", err);
   }
+}
+
+// applyTheme hands a shell design to the renderer and remembers it.
+function applyTheme(next) {
+  if (!THEMES.some((entry) => entry.id === next) || next === theme) {
+    return;
+  }
+  theme = next;
+  if (win) {
+    win.webContents.send("tama:theme", theme);
+  }
+  writePosition();
 }
 
 // defaultPosition puts the device in the bottom right corner of the screen,
@@ -138,8 +166,13 @@ function inView(position) {
 
 // createWindow builds the floating window.
 function createWindow() {
-  const saved = readPosition();
-  const start = inView(saved || defaultPosition());
+  const saved = readSettings();
+  if (THEMES.some((entry) => entry.id === saved.theme)) {
+    theme = saved.theme;
+  }
+  const position =
+    Number.isFinite(saved.x) && Number.isFinite(saved.y) ? saved : null;
+  const start = inView(position || defaultPosition());
 
   win = new BrowserWindow({
     x: start.x,
@@ -179,6 +212,12 @@ function createWindow() {
 
   win.loadFile(path.join(__dirname, "index.html"));
 
+  // The design is stored here rather than in the page, so it is handed over
+  // once the page is ready to paint it.
+  win.webContents.on("did-finish-load", () => {
+    win.webContents.send("tama:theme", theme);
+  });
+
   win.once("ready-to-show", () => {
     // Inactive, so that the pet does not steal the cursor from whatever is
     // being typed into.
@@ -197,6 +236,16 @@ ipcMain.on("tama:menu", () => {
     return;
   }
   Menu.buildFromTemplate([
+    {
+      label: "Shell Design",
+      submenu: THEMES.map((entry) => ({
+        label: entry.label,
+        type: "radio",
+        checked: theme === entry.id,
+        click: () => applyTheme(entry.id),
+      })),
+    },
+    { type: "separator" },
     {
       label: "Quit Tamagotchi",
       accelerator: "Command+Q",
