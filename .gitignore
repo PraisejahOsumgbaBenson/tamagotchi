@@ -1,0 +1,27 @@
+# Build artifacts
+/dist/
+/shell/out/
+/shell/release/
+/shell/node_modules/
+
+# Go
+/engine/tama-engine
+*.test
+*.out
+
+# Tamagotchi ROM (Bandai copyright, never committed)
+/roms/
+*.bin
+
+# Local runtime state
+*.db
+*.state
+/.state/
+
+# macOS
+.DS_Store
+
+# Editors
+.idea/
+.vscode/
+*.swp
