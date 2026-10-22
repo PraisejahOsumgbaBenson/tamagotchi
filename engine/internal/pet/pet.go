@@ -284,6 +284,11 @@ func (p *Pet) hatch(now time.Time) {
 	p.LastMoodCheck = now
 	p.WokeAt = now
 
+	// The clock is compressed, so a full meter would keep the first meal
+	// half an hour away. The newborn arrives one heart short, which gives
+	// the owner something to do straight away.
+	p.Hunger = 3
+
 	p.Emit(5200, 140)
 }
 

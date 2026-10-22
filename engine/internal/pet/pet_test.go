@@ -38,8 +38,12 @@ func TestTheEggHatches(t *testing.T) {
 	if p.Stage != StageBaby {
 		t.Fatalf("stage = %v, want baby", p.Stage)
 	}
-	if p.Hunger != 4 || p.Happy != 4 {
-		t.Errorf("the newborn arrived at hunger %d, happy %d", p.Hunger, p.Happy)
+	// The newborn is a little hungry so the first meal has somewhere to go.
+	if p.Hunger != 3 {
+		t.Errorf("the newborn arrived at hunger %d, want 3", p.Hunger)
+	}
+	if p.Happy != 4 {
+		t.Errorf("the newborn arrived at happy %d, want 4", p.Happy)
 	}
 }
 
