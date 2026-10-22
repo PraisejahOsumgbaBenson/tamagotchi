@@ -3,7 +3,7 @@ package pet
 import (
 	"fmt"
 
-	"github.com/PraisejahOsumgbaBenson/tama/engine/internal/lcd"
+	"github.com/PraisejahOsumgbaBenson/tamagotchi/engine/internal/lcd"
 )
 
 // sprite builds a bitmap from rows of text, where '#' is an on pixel and

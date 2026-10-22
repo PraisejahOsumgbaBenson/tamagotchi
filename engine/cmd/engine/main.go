@@ -19,8 +19,8 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/PraisejahOsumgbaBenson/tama/engine/internal/engine"
-	"github.com/PraisejahOsumgbaBenson/tama/engine/internal/proto"
+	"github.com/PraisejahOsumgbaBenson/tamagotchi/engine/internal/engine"
+	"github.com/PraisejahOsumgbaBenson/tamagotchi/engine/internal/proto"
 	"github.com/gorilla/websocket"
 )
 

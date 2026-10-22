@@ -3,7 +3,7 @@ package pet
 import (
 	"time"
 
-	"github.com/PraisejahOsumgbaBenson/tama/engine/internal/lcd"
+	"github.com/PraisejahOsumgbaBenson/tamagotchi/engine/internal/lcd"
 )
 
 // The hearts used on the meter screens. They are three by three because
