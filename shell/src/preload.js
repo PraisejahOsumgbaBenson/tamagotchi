@@ -16,6 +16,12 @@ contextBridge.exposeInMainWorld("tama", {
   // save writes out where the device is on the desktop.
   save: () => ipcRenderer.send("tama:save"),
 
-  // menu opens the little menu that holds the way out of the app.
+  // menu opens the little menu that holds the shell designs and the way out
+  // of the app.
   menu: () => ipcRenderer.send("tama:menu"),
+
+  // onTheme listens for a shell design picked in that menu.
+  onTheme: (callback) => {
+    ipcRenderer.on("tama:theme", (_event, name) => callback(name));
+  },
 });
