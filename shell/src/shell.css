@@ -27,6 +27,7 @@
   --button-dark: #d9829a;
   --button-ink: 122, 62, 80;
   --btn-shade: 146, 76, 96;
+  --btn-socket: 94, 62, 58;
 
   /* The printed decoration on the plastic. A tile that repeats over the
    * whole body, drawn as an SVG so it never turns into a blurry bitmap. */
@@ -35,9 +36,11 @@
   --print-ink: 124, 99, 70;
 
   /* Colours for the moulded edges. The rim catches the light, the shade is
-   * the plastic turning away from it. */
+   * the plastic turning away from it, and the well is the shadow inside the
+   * screen recess. */
   --rim-rgb: 255, 252, 244;
   --shade-rgb: 126, 101, 74;
+  --well-shade: 118, 94, 88;
 
   --lcd-ink: #1d2233;
   --lcd-glass: #98a566;
@@ -54,6 +57,53 @@
  * Add a design by copying one block and giving it a name; the main process
  * lists these names in the right-click menu.
  */
+
+/* A glossy black body with white polka dots. The dots are printed big and
+ * close together, the way the fabric prints of the period were, and the
+ * plastic under them is nearly black so the dots carry the design. */
+.device[data-theme="polka"] {
+  --plastic-light: #3b3e46;
+  --plastic-mid: #1c1f24;
+  --plastic-dark: #0e1014;
+  --plastic-shade: #050608;
+
+  /* Pale buttons so three black circles do not disappear into the body. */
+  --button-light: #ffffff;
+  --button-mid: #d8d9dd;
+  --button-dark: #8f929a;
+  --button-ink: 24, 25, 29;
+  --btn-shade: 40, 42, 48;
+  --btn-socket: 0, 0, 0;
+
+  --rim-rgb: 255, 255, 255;
+  --shade-rgb: 0, 0, 0;
+  --well-shade: 0, 0, 0;
+  --print-ink: 255, 255, 255;
+  --pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='30' height='30'%3E%3Cg fill='%23ffffff' fill-opacity='0.92'%3E%3Ccircle cx='7.5' cy='7.5' r='3.4'/%3E%3Ccircle cx='22.5' cy='22.5' r='3.4'/%3E%3C/g%3E%3C/svg%3E");
+  --pattern-size: 30px 30px;
+}
+
+/* The same print inverted: a white body with black dots and black buttons. */
+.device[data-theme="pearl"] {
+  --plastic-light: #ffffff;
+  --plastic-mid: #f3f1ed;
+  --plastic-dark: #dedad2;
+  --plastic-shade: #bdb7ac;
+
+  --button-light: #5b5e66;
+  --button-mid: #26282e;
+  --button-dark: #0c0d10;
+  --button-ink: 245, 245, 245;
+  --btn-shade: 0, 0, 0;
+  --btn-socket: 40, 36, 32;
+
+  --rim-rgb: 255, 255, 255;
+  --shade-rgb: 96, 89, 80;
+  --well-shade: 46, 41, 36;
+  --print-ink: 22, 22, 25;
+  --pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='30' height='30'%3E%3Cg fill='%23171719' fill-opacity='0.86'%3E%3Ccircle cx='7.5' cy='7.5' r='3.4'/%3E%3Ccircle cx='22.5' cy='22.5' r='3.4'/%3E%3C/g%3E%3C/svg%3E");
+  --pattern-size: 30px 30px;
+}
 
 .device[data-theme="sakura"] {
   --plastic-light: #fff4f6;
@@ -137,6 +187,7 @@
 
   --rim-rgb: 255, 255, 255;
   --shade-rgb: 0, 0, 0;
+  --well-shade: 0, 0, 0;
   --print-ink: 226, 235, 250;
   --pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='44' height='44'%3E%3Cg fill='%23e6edfb' fill-opacity='0.5'%3E%3Cpath transform='translate(4 4) scale(0.45)' d='M12 2L13.8 10.2 22 12 13.8 13.8 12 22 10.2 13.8 2 12 10.2 10.2Z'/%3E%3Cpath transform='translate(27 27) scale(0.3)' d='M12 2L13.8 10.2 22 12 13.8 13.8 12 22 10.2 13.8 2 12 10.2 10.2Z'/%3E%3C/g%3E%3C/svg%3E");
   --pattern-size: 44px 44px;
@@ -230,10 +281,10 @@ body {
   background-size: var(--pattern-size), 100% 100%;
   background-repeat: repeat, no-repeat;
   box-shadow:
-    inset 0 2px 2px rgba(var(--rim-rgb), 0.75),
-    inset 0 -16px 22px rgba(var(--shade-rgb), 0.22),
-    inset 4px 0 12px rgba(var(--rim-rgb), 0.4),
-    inset -5px 0 14px rgba(var(--shade-rgb), 0.16);
+    inset 0 2px 2px rgba(var(--rim-rgb), 0.55),
+    inset 0 -20px 28px rgba(var(--shade-rgb), 0.32),
+    inset 5px 0 16px rgba(var(--rim-rgb), 0.22),
+    inset -7px 0 18px rgba(var(--shade-rgb), 0.24);
   /* The shadow has to come from a filter rather than a box shadow, because
    * the clip path would swallow one. */
   filter: drop-shadow(0 14px 13px rgba(56, 40, 34, 0.24))
@@ -243,40 +294,64 @@ body {
 
 /* The grain of the plastic.
  *
- * A faint noise over the whole body so the gradients do not look like
- * gradients. */
+ * Two noise fields, not one: a coarse mottle like the flow marks in moulded
+ * plastic, and a fine tooth on top of it. Soft light is what makes them read
+ * on a black body as well as a pale one, where multiply alone vanished. */
 .device::after {
   content: "";
   position: absolute;
   inset: 0;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)'/%3E%3C/svg%3E");
-  background-size: 180px 180px;
-  opacity: 0.055;
-  mix-blend-mode: multiply;
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='110' height='110'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.35' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='110' height='110' filter='url(%23n)'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='m'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.38' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23m)'/%3E%3C/svg%3E");
+  background-size: 110px 110px, 200px 200px;
+  opacity: 0.19;
+  mix-blend-mode: soft-light;
+  z-index: 0;
   pointer-events: none;
 }
 
 /* The soft highlight across the top left of the body.
  *
- * Two parts: a bright rim where the plastic catches the light along the top
- * edge, and a broad, weak sheen over the upper left. Keep the sheen weak so
- * the shell keeps its colour instead of blowing out to white. */
+ * A bright rim where the plastic catches the light along the top edge, a
+ * broad, weak sheen over the upper left, and one long diagonal reflection
+ * from the room. The reflection is what stops the body reading as a flat
+ * silhouette; real glossy plastic always carries a window in it. Keep the
+ * sheen weak so the shell keeps its colour instead of blowing out to white. */
 .device::before {
   content: "";
   position: absolute;
   inset: 0;
   background:
     radial-gradient(
-      58% 8% at 40% 0%,
-      rgba(255, 252, 242, 0.62) 0%,
-      rgba(255, 252, 242, 0) 70%
+      62% 7% at 42% 0%,
+      rgba(var(--rim-rgb), 0.55) 0%,
+      rgba(var(--rim-rgb), 0) 78%
+    ),
+    linear-gradient(
+      113deg,
+      rgba(var(--rim-rgb), 0) 8%,
+      rgba(var(--rim-rgb), 0.06) 20%,
+      rgba(var(--rim-rgb), 0.012) 30%,
+      rgba(var(--rim-rgb), 0) 38%
+    ),
+    linear-gradient(
+      90deg,
+      rgba(var(--rim-rgb), 0.08) 0%,
+      rgba(var(--rim-rgb), 0) 11%
     ),
     radial-gradient(
-      86% 50% at 20% 10%,
-      rgba(255, 250, 236, 0.16) 0%,
-      rgba(255, 250, 236, 0.04) 45%,
-      rgba(255, 250, 236, 0) 68%
+      90% 55% at 16% 8%,
+      rgba(var(--rim-rgb), 0.1) 0%,
+      rgba(var(--rim-rgb), 0.025) 46%,
+      rgba(var(--rim-rgb), 0) 70%
+    ),
+    radial-gradient(
+      80% 40% at 78% 102%,
+      rgba(var(--rim-rgb), 0.08) 0%,
+      rgba(var(--rim-rgb), 0) 68%
     );
+  z-index: 1;
   pointer-events: none;
 }
 
@@ -297,6 +372,7 @@ body {
   text-shadow:
     0 1px 0 rgba(var(--rim-rgb), 0.55),
     0 -1px 0 rgba(var(--shade-rgb), 0.18);
+  z-index: 2;
   pointer-events: none;
 }
 
@@ -308,15 +384,23 @@ body {
   width: 164px;
   height: 166px;
   border-radius: 16px;
-  background: linear-gradient(
-    160deg,
-    rgba(120, 96, 90, 0.16) 0%,
-    rgba(255, 255, 255, 0) 30%
-  );
+  background:
+    linear-gradient(
+        160deg,
+        rgba(var(--well-shade), 0.3) 0%,
+        rgba(var(--well-shade), 0) 34%
+      ),
+    linear-gradient(
+      180deg,
+      rgba(var(--well-shade), 0.1) 0%,
+      rgba(var(--well-shade), 0.24) 100%
+    );
   box-shadow:
-    inset 0 2px 4px rgba(118, 94, 88, 0.28),
-    inset 0 -1px 2px rgba(255, 255, 255, 0.5),
-    0 1px 0 rgba(255, 255, 255, 0.65);
+    inset 0 3px 7px rgba(var(--well-shade), 0.55),
+    inset 0 -1px 2px rgba(var(--rim-rgb), 0.28),
+    0 1px 0 rgba(var(--rim-rgb), 0.45),
+    0 -1px 0 rgba(var(--well-shade), 0.3);
+  z-index: 2;
 }
 
 /* The printed frame around the screen.
@@ -371,13 +455,24 @@ body {
 .glass-sheen {
   position: absolute;
   inset: 0;
-  background: linear-gradient(
-    112deg,
-    rgba(255, 255, 255, 0.09) 0%,
-    rgba(255, 255, 255, 0.03) 26%,
-    rgba(255, 255, 255, 0) 46%,
-    rgba(255, 255, 255, 0) 100%
-  );
+  background:
+    linear-gradient(
+      112deg,
+      rgba(255, 255, 255, 0.13) 0%,
+      rgba(255, 255, 255, 0.03) 22%,
+      rgba(255, 255, 255, 0) 40%
+    ),
+    linear-gradient(
+      112deg,
+      rgba(255, 255, 255, 0) 54%,
+      rgba(255, 255, 255, 0.05) 60%,
+      rgba(255, 255, 255, 0) 67%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0) 86%,
+      rgba(255, 255, 255, 0.07) 100%
+    );
   pointer-events: none;
 }
 
@@ -399,9 +494,11 @@ body {
   display: flex;
   justify-content: center;
   gap: 22px;
+  z-index: 2;
 }
 
 .tama-btn {
+  position: relative;
   width: 32px;
   height: 32px;
   padding: 0;
@@ -420,22 +517,43 @@ body {
     var(--button-dark) 100%
   );
   box-shadow:
-    inset 0 -2px 3px rgba(var(--btn-shade), 0.38),
-    inset 0 2px 2px rgba(255, 255, 255, 0.85),
-    0 2px 3px rgba(94, 62, 58, 0.34);
+    inset 0 -2px 4px rgba(var(--btn-shade), 0.45),
+    inset 0 2px 2px rgba(255, 255, 255, 0.55),
+    0 0 0 1.5px rgba(var(--btn-socket), 0.4),
+    0 3px 5px rgba(var(--btn-socket), 0.42),
+    0 1px 0 rgba(var(--rim-rgb), 0.4);
   cursor: pointer;
   transition:
     transform 60ms ease-out,
     box-shadow 60ms ease-out;
 }
 
+/* The wet highlight sitting on the top left of the dome. The radial
+ * background alone is too even to read as a solid button. */
+.tama-btn::before {
+  content: "";
+  position: absolute;
+  left: 20%;
+  top: 13%;
+  width: 46%;
+  height: 30%;
+  border-radius: 50%;
+  background: radial-gradient(
+    closest-side,
+    rgba(255, 255, 255, 0.62),
+    rgba(255, 255, 255, 0)
+  );
+  pointer-events: none;
+}
+
 .tama-btn:active,
 .tama-btn.pressed {
   transform: translateY(1px) scale(0.97);
   box-shadow:
-    inset 0 2px 5px rgba(126, 58, 78, 0.45),
-    inset 0 1px 1px rgba(255, 255, 255, 0.4),
-    0 1px 1px rgba(94, 62, 58, 0.28);
+    inset 0 2px 5px rgba(var(--btn-shade), 0.55),
+    inset 0 1px 1px rgba(255, 255, 255, 0.35),
+    0 0 0 1.5px rgba(var(--btn-socket), 0.4),
+    0 1px 2px rgba(var(--btn-socket), 0.35);
 }
 
 /* The device lifts off the desk very slightly and comes back down. */

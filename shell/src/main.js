@@ -32,6 +32,8 @@ const POSITION_FILE = () => path.join(app.getPath("userData"), "position.json");
 // match the data-theme blocks in shell.css. The labels are the ones shown in
 // the right-click menu.
 const THEMES = [
+  { id: "polka", label: "Black Polka" },
+  { id: "pearl", label: "White Polka" },
   { id: "sakura", label: "Sakura" },
   { id: "sky", label: "Sky" },
   { id: "mint", label: "Mint" },
@@ -42,7 +44,7 @@ const THEMES = [
 let win = null;
 
 // theme is the shell design in use right now.
-let theme = "sakura";
+let theme = "polka";
 
 // engine is the pet, running as a child process.
 let engine = null;
