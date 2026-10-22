@@ -1,0 +1,14 @@
+{
+  "name": "tama-shell",
+  "version": "0.1.0",
+  "private": true,
+  "description": "The floating window that shows the Tamagotchi",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "electron .",
+    "debug": "electron . --remote-debugging-port=9222"
+  },
+  "devDependencies": {
+    "electron": "^45.0.0"
+  }
+}
