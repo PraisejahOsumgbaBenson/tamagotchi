@@ -1,4 +1,4 @@
-module github.com/PraisejahOsumgbaBenson/tama/engine
+module github.com/PraisejahOsumgbaBenson/tamagotchi/engine
 
 go 1.24
 

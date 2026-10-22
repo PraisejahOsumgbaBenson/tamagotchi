@@ -11,7 +11,7 @@ package pet
 import (
 	"time"
 
-	"github.com/PraisejahOsumgbaBenson/tama/engine/internal/lcd"
+	"github.com/PraisejahOsumgbaBenson/tamagotchi/engine/internal/lcd"
 )
 
 // Stage is a stage of life.

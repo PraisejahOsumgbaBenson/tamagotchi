@@ -1,4 +1,4 @@
-# tama
+# Tamagotchi
 
 A photorealistic Tamagotchi P1 that floats on your macOS desktop.
 

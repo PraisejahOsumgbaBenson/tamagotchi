@@ -5,8 +5,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/PraisejahOsumgbaBenson/tama/engine/internal/pet"
-	"github.com/PraisejahOsumgbaBenson/tama/engine/internal/proto"
+	"github.com/PraisejahOsumgbaBenson/tamagotchi/engine/internal/pet"
+	"github.com/PraisejahOsumgbaBenson/tamagotchi/engine/internal/proto"
 )
 
 func TestStepPublishesAFrame(t *testing.T) {

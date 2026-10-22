@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/PraisejahOsumgbaBenson/tama/engine/internal/lcd"
+	"github.com/PraisejahOsumgbaBenson/tamagotchi/engine/internal/lcd"
 )
 
 var epoch = time.Date(2026, 10, 22, 12, 0, 0, 0, time.UTC)

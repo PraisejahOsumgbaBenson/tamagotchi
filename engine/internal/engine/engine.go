@@ -15,9 +15,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/PraisejahOsumgbaBenson/tama/engine/internal/lcd"
-	"github.com/PraisejahOsumgbaBenson/tama/engine/internal/pet"
-	"github.com/PraisejahOsumgbaBenson/tama/engine/internal/proto"
+	"github.com/PraisejahOsumgbaBenson/tamagotchi/engine/internal/lcd"
+	"github.com/PraisejahOsumgbaBenson/tamagotchi/engine/internal/pet"
+	"github.com/PraisejahOsumgbaBenson/tamagotchi/engine/internal/proto"
 )
 
 // Options configure an Engine.
