@@ -56,6 +56,7 @@ const (
 	ViewDuck
 	ViewMeter
 	ViewDiscipline
+	ViewClock
 )
 
 // Button is one of the three buttons on the device.
@@ -112,6 +113,10 @@ const (
 	// How long a call for attention lasts.
 	callDuration = 15 * time.Minute
 
+	// How long the device waits to see whether a second button is joining
+	// the first one.
+	comboWindow = 120 * time.Millisecond
+
 	// The pet sleeps at night.
 	sleepHour = 21
 	wakeHour  = 7
@@ -147,9 +152,9 @@ type Pet struct {
 	MeterPage int
 
 	// The mini game.
-	GameTarget int
-	GameRound  int
-	GameTries  int
+	GameTarget  int
+	GameRound   int
+	GameCorrect int
 
 	// Transient state, cleared when its time is up.
 	Mood         Mood
@@ -169,6 +174,17 @@ type Pet struct {
 	// The time the pet last saw. Kept so that the pet can move its own
 	// clock forward without reaching for the wall clock.
 	now time.Time
+
+	// The state of the three buttons, and the pending A press that waits
+	// to see whether a second button is joining it.
+	buttons      [3]bool
+	pendingA     bool
+	pendingUntil time.Time
+
+	// The pet's own idea of the time, which it can move with the clock
+	// screen.
+	ClockOffset time.Duration
+	SetMode     bool
 
 	// Events waiting to be picked up by the engine.
 	Outbox []Event
@@ -231,7 +247,12 @@ func (r *rng) intn(n int) int {
 }
 
 // Emit queues a sound for the engine to play.
+//
+// A muted pet keeps its mouth shut.
 func (p *Pet) Emit(freq, dur uint32) {
+	if !p.Sound {
+		return
+	}
 	p.Outbox = append(p.Outbox, Event{Freq: freq, Dur: dur})
 }
 
@@ -245,6 +266,70 @@ func (p *Pet) Drain() []Event {
 	return out
 }
 
+// SetButtons records the state of the three buttons and acts on whatever
+// changed.
+//
+// The original device acts on the press, not the release. It also has one
+// combination, A with C, which mutes the sound and which is only meant to
+// happen on the main screen. So a press of A there waits a moment to see
+// whether C is joining it.
+func (p *Pet) SetButtons(a, b, c bool, now time.Time) {
+	state := [3]bool{a, b, c}
+
+	var pressed [3]bool
+	for i := range state {
+		pressed[i] = state[i] && !p.buttons[i]
+	}
+	p.buttons = state
+
+	if p.pendingA {
+		switch {
+		case pressed[2]:
+			// C joined A, so this is the combination.
+			p.pendingA = false
+			p.toggleSound()
+			return
+		case !state[0]:
+			// A came and went without C joining it, so it was an ordinary
+			// press. Acting now rather than at the end of the window keeps
+			// a quick tap feeling immediate.
+			p.pendingA = false
+			p.Press(ButtonA, now)
+		case !now.Before(p.pendingUntil):
+			p.pendingA = false
+			p.Press(ButtonA, now)
+		}
+	}
+
+	// Both buttons can arrive in the same frame, which is what happens when
+	// the presses are closer together than the frame rate. On the main
+	// screen that is the sound combination and nothing else.
+	if pressed[0] && pressed[2] && p.View == ViewMain && p.Selected < 0 {
+		p.toggleSound()
+		return
+	}
+
+	if pressed[0] && p.View == ViewMain && p.Selected < 0 {
+		p.pendingA = true
+		p.pendingUntil = now.Add(comboWindow)
+		return
+	}
+
+	for i := range pressed {
+		if pressed[i] {
+			p.Press(Button(i), now)
+		}
+	}
+}
+
+// toggleSound mutes or unmutes the pet.
+func (p *Pet) toggleSound() {
+	p.Sound = !p.Sound
+	if p.Sound {
+		p.Emit(5200, 60)
+	}
+}
+
 // Press handles a button being pressed.
 //
 // The original device acts on the press, not the release, so this is called
@@ -256,7 +341,7 @@ func (p *Pet) Press(b Button, now time.Time) {
 		// The egg does nothing but sit there until it hatches.
 		return
 	}
-	if p.Stage == StageAdult && p.Dead() {
+	if p.Dead() {
 		return
 	}
 
@@ -277,6 +362,8 @@ func (p *Pet) Press(b Button, now time.Time) {
 		p.pressMeter(b)
 	case ViewDiscipline:
 		p.pressDiscipline(b, now)
+	case ViewClock:
+		p.pressClock(b, now)
 	}
 }
 
@@ -292,6 +379,10 @@ func (p *Pet) pressMain(b Button, now time.Time) {
 		p.Emit(4400, 40)
 	case ButtonB:
 		if p.Selected < 0 {
+			// With nothing selected the middle button brings up the
+			// clock, which is what the original does.
+			p.View = ViewClock
+			p.SetMode = false
 			return
 		}
 		p.openSelected()
@@ -320,7 +411,7 @@ func (p *Pet) openSelected() {
 	case lcd.IconPlay:
 		p.View = ViewPlay
 		p.GameRound = 0
-		p.GameTries = 0
+		p.GameCorrect = 0
 		p.GameTarget = p.RNG.intn(2)
 		p.Mood = MoodPlaying
 		p.MoodUntil = nowPlus(p, 2*time.Second)
@@ -391,38 +482,52 @@ func (p *Pet) pressLight(b Button) {
 func (p *Pet) pressPlay(b Button, now time.Time) {
 	switch b {
 	case ButtonA, ButtonB:
+		// The original game asks which way the pet will turn. The two
+		// outer answers are left and right.
 		guess := 0
 		if b == ButtonB {
 			guess = 1
 		}
 		if guess == p.GameTarget {
-			if p.Happy < 4 {
-				p.Happy++
-			}
+			p.GameCorrect++
 			p.Mood = MoodHappy
 		} else {
-			if p.Happy > 0 {
-				p.Happy--
-			}
 			p.Mood = MoodSad
 		}
 		p.GameRound++
-		p.GameTries++
 		if p.GameRound >= 5 {
-			p.View = ViewMain
-			p.Selected = -1
-			p.Mood = MoodIdle
-			p.MoodUntil = nowPlus(p, 0)
+			p.finishGame()
 			return
 		}
 		p.GameTarget = p.RNG.intn(2)
 		p.Mood = MoodPlaying
 		p.MoodUntil = nowPlus(p, 2*time.Second)
 	case ButtonC:
+		// The right button stops the game.
 		p.View = ViewMain
 		p.Selected = -1
 		p.Mood = MoodIdle
 	}
+}
+
+// finishGame settles the score of the mini game.
+//
+// Five rounds, and at least three right wins a heart.
+func (p *Pet) finishGame() {
+	if p.GameCorrect >= 3 {
+		if p.Happy < 4 {
+			p.Happy++
+		}
+		p.Mood = MoodHappy
+	} else {
+		if p.Happy > 0 {
+			p.Happy--
+		}
+		p.Mood = MoodSad
+	}
+	p.MoodUntil = nowPlus(p, 2*time.Second)
+	p.View = ViewMain
+	p.Selected = -1
 }
 
 func (p *Pet) pressMedicine(b Button, now time.Time) {
@@ -484,6 +589,34 @@ func (p *Pet) pressDiscipline(b Button, now time.Time) {
 	case ButtonC:
 		p.View = ViewMain
 		p.Selected = -1
+	}
+}
+
+// pressClock handles the clock screen.
+//
+// With A held down, C starts setting the time. A moves the hours, B moves
+// the minutes, and C confirms.
+func (p *Pet) pressClock(b Button, now time.Time) {
+	switch b {
+	case ButtonA:
+		if p.SetMode {
+			p.ClockOffset += time.Hour
+		}
+	case ButtonB:
+		if p.SetMode {
+			p.ClockOffset += time.Minute
+		} else {
+			p.View = ViewMain
+		}
+	case ButtonC:
+		if p.buttons[0] && !p.SetMode {
+			// A is being held down, so this is the start of setting
+			// the time rather than a way out of the screen.
+			p.SetMode = true
+			return
+		}
+		p.SetMode = false
+		p.View = ViewMain
 	}
 }
 

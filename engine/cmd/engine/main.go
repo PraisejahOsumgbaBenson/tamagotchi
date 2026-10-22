@@ -55,15 +55,27 @@ func main() {
 		return
 	}
 
-	if err := serve(eng, *addr); err != nil {
-		slog.Error("the engine could not start", "error", err)
-		os.Exit(1)
-	}
-
+	// The pet lives in this loop, so it has to start before anything that
+	// blocks.
 	go eng.Run(stop)
+
+	// The server blocks until it stops, so it gets its own goroutine and its
+	// error comes back on a channel.
+	serveErrs := make(chan error, 1)
+	go func() {
+		serveErrs <- serve(eng, *addr)
+	}()
+
 	slog.Info("the engine is running", "address", "ws://"+*addr+"/ws", "state", *statePath)
 
-	<-stop
+	select {
+	case err := <-serveErrs:
+		if err != nil {
+			slog.Error("the engine could not start", "error", err)
+			os.Exit(1)
+		}
+	case <-stop:
+	}
 
 	// Give the pet a moment to be written out so it is still there
 	// tomorrow.
@@ -132,7 +144,7 @@ func handleConn(eng *engine.Engine, conn *websocket.Conn) {
 	// Tell the shell what this is, then bring it up to date.
 	send(conn, proto.Hello())
 	send(conn, proto.Clock(eng.Now()))
-	eng.Step()
+	send(conn, eng.Snapshot())
 
 	done := make(chan struct{})
 	go func() {

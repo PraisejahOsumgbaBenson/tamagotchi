@@ -282,3 +282,105 @@ func TestRenderMarksTheSelectedMenuIcon(t *testing.T) {
 		t.Errorf("sel = %b, want the feed icon", sel)
 	}
 }
+
+func TestHoldingAButtonDoesNotActTwice(t *testing.T) {
+	p := New(epoch)
+
+	p.SetButtons(true, false, false, epoch)
+	p.SetButtons(true, false, false, epoch.Add(comboWindow))
+
+	if p.Selected != 0 {
+		t.Fatalf("the press should have selected the first icon, got %d", p.Selected)
+	}
+
+	// Still holding the button down.
+	p.SetButtons(true, false, false, epoch.Add(2*comboWindow))
+	if p.Selected != 0 {
+		t.Errorf("holding a button should not act again, got %d", p.Selected)
+	}
+}
+
+func TestAWithCMutesTheSound(t *testing.T) {
+	p := New(epoch)
+
+	p.SetButtons(true, false, false, epoch)
+	p.SetButtons(true, false, true, epoch.Add(10*time.Millisecond))
+
+	if p.Sound {
+		t.Error("the sound should be muted")
+	}
+	if p.Selected != -1 {
+		t.Errorf("nothing should be selected, got %d", p.Selected)
+	}
+}
+
+func TestAQuickTapActsWithoutWaitingOutTheComboWindow(t *testing.T) {
+	p := New(epoch)
+
+	// Down and up inside one frame, which is what the engine hands over
+	// when the two reports arrive between frames.
+	p.SetButtons(true, false, false, epoch)
+	p.SetButtons(false, false, false, epoch.Add(5*time.Millisecond))
+
+	if p.Selected != 0 {
+		t.Errorf("a tapped A should select the first icon, got %d", p.Selected)
+	}
+}
+
+func TestAAndCInOneFrameMutes(t *testing.T) {
+	p := New(epoch)
+
+	// Both presses arrive in the same frame, so there is no window to wait
+	// out.
+	p.SetButtons(true, false, true, epoch)
+
+	if p.Sound {
+		t.Error("the sound should be muted")
+	}
+	if p.Selected != -1 {
+		t.Errorf("the mute should not also open the menu, got %d", p.Selected)
+	}
+}
+
+func TestTheClockScreenShowsTheTime(t *testing.T) {
+	p := New(epoch)
+
+	p.SetButtons(false, true, false, epoch)
+	if p.View != ViewClock {
+		t.Fatalf("view = %v, want the clock", p.View)
+	}
+
+	var s lcd.Screen
+	p.Render(&s, epoch)
+
+	// Noon on the clock.
+	found := false
+	for y := 0; y < lcd.Height && !found; y++ {
+		for x := 0; x < lcd.Width; x++ {
+			if s.Pixel(x, y) {
+				found = true
+				break
+			}
+		}
+	}
+	if !found {
+		t.Error("the clock screen should show something")
+	}
+}
+
+func TestTheClockCanBeSet(t *testing.T) {
+	p := New(epoch)
+	p.SetButtons(false, true, false, epoch) // the clock
+	p.SetButtons(true, false, false, epoch.Add(time.Millisecond))
+	p.SetButtons(true, false, true, epoch.Add(2*time.Millisecond))
+
+	if !p.SetMode {
+		t.Fatal("holding A and pressing C should start setting the time")
+	}
+
+	before := p.ClockOffset
+	p.Press(ButtonA, epoch.Add(3*time.Millisecond))
+	if p.ClockOffset != before+time.Hour {
+		t.Errorf("the offset is %v, want it moved by an hour", p.ClockOffset)
+	}
+}
