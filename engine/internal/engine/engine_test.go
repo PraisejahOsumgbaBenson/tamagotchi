@@ -47,45 +47,121 @@ func TestNoFrameWhenNothingChanges(t *testing.T) {
 	}
 }
 
+func TestSnapshotMatchesThePublishedFrame(t *testing.T) {
+	e := New(Options{})
+
+	messages, cancel := e.Subscribe()
+	defer cancel()
+
+	e.Step()
+	published := waitForFrame(t, messages, func(m proto.Message) bool {
+		return m.Kind == proto.KindFrame
+	})
+
+	snapshot := e.Snapshot()
+	if snapshot.Kind != proto.KindFrame {
+		t.Fatalf("got a %q message, want a frame", snapshot.Kind)
+	}
+	if len(snapshot.Rows) != len(published.Rows) {
+		t.Fatalf("the snapshot has %d rows, the frame has %d", len(snapshot.Rows), len(published.Rows))
+	}
+	for i := range published.Rows {
+		if snapshot.Rows[i] != published.Rows[i] {
+			t.Errorf("row %d: snapshot %#x, frame %#x", i, snapshot.Rows[i], published.Rows[i])
+		}
+	}
+	if snapshot.Icons != published.Icons || snapshot.Sel != published.Sel {
+		t.Errorf(
+			"the snapshot marks icons %#x and sel %#x, the frame marks %#x and %#x",
+			snapshot.Icons, snapshot.Sel, published.Icons, published.Sel,
+		)
+	}
+}
+
+func TestSnapshotBeforeTheFirstStep(t *testing.T) {
+	// A shell can connect before the pet has moved. It should still be
+	// given a frame instead of a blank window.
+	snapshot := New(Options{}).Snapshot()
+
+	if snapshot.Kind != proto.KindFrame {
+		t.Fatalf("got a %q message, want a frame", snapshot.Kind)
+	}
+	if len(snapshot.Rows) != 16 {
+		t.Errorf("the snapshot has %d rows, want 16", len(snapshot.Rows))
+	}
+}
+
 func TestButtonsActOnThePress(t *testing.T) {
+	// The pet waits a moment on the main screen to see whether a second
+	// button is joining the first, so the clock has to move.
+	clock := &fakeClock{
+		now:  time.Date(2026, 10, 22, 12, 0, 0, 0, time.UTC),
+		step: 50 * time.Millisecond,
+	}
+	e := New(Options{Clock: clock.Now})
+
+	messages, cancel := e.Subscribe()
+	defer cancel()
+
+	e.Handle(proto.Buttons(true, false, false))
+	for i := 0; i < 10; i++ {
+		e.Step()
+	}
+
+	// The button makes a noise and changes the screen. The frame that
+	// carries the selection is what matters here.
+	frame := waitForFrame(t, messages, func(m proto.Message) bool {
+		return m.Kind == proto.KindFrame && m.Sel != 0
+	})
+	if frame.Sel == 0 {
+		t.Error("no menu icon should be selected yet")
+	}
+}
+
+func TestATapBetweenFramesIsNotLost(t *testing.T) {
+	// The shell reports the press and the release, and both can land
+	// between two frames. The latch is what keeps the tap.
 	e := New(Options{})
 
 	messages, cancel := e.Subscribe()
 	defer cancel()
 
 	e.Handle(proto.Buttons(true, false, false))
-	e.Step()
+	e.Handle(proto.Buttons(false, false, false))
 
-	// The button makes a noise and changes the screen. The frame is what
-	// matters here.
-	frame := waitForFrame(t, messages)
-	if frame.Sel == 0 {
-		t.Error("no menu icon should be selected yet")
+	for i := 0; i < 10; i++ {
+		e.Step()
 	}
 
-	// Holding the button down should not act again.
-	drain(messages)
-	e.Step()
-	select {
-	case m := <-messages:
-		t.Fatalf("holding a button should not act twice, got a %q", m.Kind)
-	default:
-	}
+	waitForFrame(t, messages, func(m proto.Message) bool {
+		return m.Kind == proto.KindFrame && m.Sel != 0
+	})
 }
 
-// waitForFrame reads messages until a frame arrives.
-func waitForFrame(t *testing.T, messages <-chan proto.Message) proto.Message {
+// fakeClock is a clock that moves forward every time it is read.
+type fakeClock struct {
+	now  time.Time
+	step time.Duration
+}
+
+func (c *fakeClock) Now() time.Time {
+	c.now = c.now.Add(c.step)
+	return c.now
+}
+
+// waitForFrame reads messages until a frame that matches arrives.
+func waitForFrame(t *testing.T, messages <-chan proto.Message, match func(proto.Message) bool) proto.Message {
 	t.Helper()
 
 	deadline := time.After(2 * time.Second)
 	for {
 		select {
 		case m := <-messages:
-			if m.Kind == proto.KindFrame {
+			if match(m) {
 				return m
 			}
 		case <-deadline:
-			t.Fatal("no frame arrived")
+			t.Fatal("no matching frame arrived")
 		}
 	}
 }

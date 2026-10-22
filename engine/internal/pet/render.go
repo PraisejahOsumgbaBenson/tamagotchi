@@ -43,6 +43,8 @@ func (p *Pet) Render(s *lcd.Screen, now time.Time) (icons uint32, selected uint3
 		p.renderMeter(s, now)
 	case ViewDiscipline:
 		p.renderChoice(s, "SCOLD", "SPARE")
+	case ViewClock:
+		p.renderClock(s, now)
 	}
 
 	if p.Selected >= 0 && p.Selected < len(MenuIcons) {
@@ -148,6 +150,36 @@ func (p *Pet) drawOption(s *lcd.Screen, text string, y int, inverted bool) {
 		return
 	}
 	s.DrawText(x, y, text)
+}
+
+// renderClock draws the time.
+//
+// The original shows the hours and the minutes as four digits across the
+// middle of the display.
+func (p *Pet) renderClock(s *lcd.Screen, now time.Time) {
+	t := now.Add(p.ClockOffset)
+	text := itoa2(t.Hour()) + ":" + itoa2(t.Minute())
+
+	x := (lcd.Width - lcd.TextWidth(text)) / 2
+	s.DrawText(x, 4, text)
+
+	if p.SetMode {
+		s.DrawText(1, 12, "SET")
+	}
+}
+
+// itoa2 turns a number into a two digit string.
+func itoa2(n int) string {
+	if n < 0 {
+		n = 0
+	}
+	if n > 99 {
+		n = 99
+	}
+	if n < 10 {
+		return "0" + itoa(n)
+	}
+	return itoa(n)
 }
 
 // renderPlay draws the mini game.

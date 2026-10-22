@@ -49,8 +49,11 @@ type Engine struct {
 	clock  func() time.Time
 	offset time.Duration
 
+	// buttons is the state the shell last reported, and pressed remembers
+	// the buttons that went down since the last frame. Without the latch a
+	// tap that starts and finishes between two frames is never seen at all.
 	buttons [3]bool
-	held    [3]bool
+	pressed [3]bool
 
 	statePath string
 	frameRate int
@@ -86,8 +89,15 @@ func New(opts Options) *Engine {
 }
 
 // Now returns the engine's idea of the time.
+//
+// The pet keeps its own offset on top of this, because the original lets
+// you set the clock with the buttons.
 func (e *Engine) Now() time.Time {
-	return e.clock().Add(e.offset)
+	e.mu.Lock()
+	offset := e.pet.ClockOffset
+	e.mu.Unlock()
+
+	return e.clock().Add(e.offset).Add(offset)
 }
 
 // SetClock corrects the engine's clock. The original device keeps its own
@@ -138,9 +148,13 @@ func (e *Engine) Handle(m proto.Message) {
 	switch m.Kind {
 	case proto.KindButton:
 		e.mu.Lock()
-		e.buttons[0] = m.A
-		e.buttons[1] = m.B
-		e.buttons[2] = m.C
+		next := [3]bool{m.A, m.B, m.C}
+		for i := range next {
+			if next[i] && !e.buttons[i] {
+				e.pressed[i] = true
+			}
+		}
+		e.buttons = next
 		e.mu.Unlock()
 	case proto.KindClock:
 		e.SetClock(m.Epoch)
@@ -166,15 +180,16 @@ func (e *Engine) Step() {
 	p := e.pet
 	screen := e.screen
 
-	// The original device acts on the press, not the release.
-	for i := range e.buttons {
-		if e.buttons[i] && !e.held[i] {
-			e.held[i] = true
-			p.Press(pet.Button(i), now)
-		} else if !e.buttons[i] {
-			e.held[i] = false
-		}
-	}
+	// The pet works out what the buttons mean, including the
+	// combinations, so it is told the whole state of all three. A button
+	// that went down and came back up between frames is presented as still
+	// down for this frame, and the next frame shows it released.
+	a := e.buttons[0] || e.pressed[0]
+	b := e.buttons[1] || e.pressed[1]
+	c := e.buttons[2] || e.pressed[2]
+	e.pressed = [3]bool{}
+
+	p.SetButtons(a, b, c, now)
 
 	p.Tick(now)
 
@@ -275,4 +290,15 @@ func (e *Engine) Screen() lcd.Screen {
 	e.mu.Lock()
 	defer e.mu.Unlock()
 	return e.screen
+}
+
+// Snapshot returns the current screen as a frame.
+//
+// Frames are only published when something changes, so a shell that has just
+// connected needs to be handed the current one rather than waiting for the
+// pet to move.
+func (e *Engine) Snapshot() proto.Message {
+	e.mu.Lock()
+	defer e.mu.Unlock()
+	return proto.Frame(e.screen.Rows(), e.icons, e.sel)
 }
