@@ -8,7 +8,8 @@
 // around by its edges, and the parts of the window that are not the device
 // let the mouse through to whatever is underneath.
 
-const { app, BrowserWindow, ipcMain, screen } = require("electron");
+const { app, BrowserWindow, Menu, ipcMain, screen } = require("electron");
+const { spawn } = require("node:child_process");
 const fs = require("node:fs");
 const path = require("node:path");
 
@@ -27,6 +28,53 @@ const PADDING = 40;
 const POSITION_FILE = () => path.join(app.getPath("userData"), "position.json");
 
 let win = null;
+
+// engine is the pet, running as a child process.
+let engine = null;
+
+// ENGINE is where the engine binary is expected to be, relative to this file.
+const ENGINE = path.join(__dirname, "..", "..", "dist", "tama-engine");
+
+// startEngine runs the engine and keeps hold of it.
+//
+// The two halves are separate processes on purpose, but launching them is not
+// something the person using this should have to think about, and forgetting
+// the engine looks exactly like a broken pet: a blank screen. So the shell
+// starts it, and quits it.
+function startEngine() {
+  if (!fs.existsSync(ENGINE)) {
+    console.error(
+      `tama: no engine at ${ENGINE}. Run "make build" first.`
+    );
+    return null;
+  }
+
+  engine = spawn(ENGINE, [], { stdio: "inherit" });
+
+  engine.on("error", (err) => {
+    console.error("tama: the engine would not start", err);
+    engine = null;
+  });
+
+  if (engine) {
+    engine.on("exit", (code, signal) => {
+      if (signal !== "SIGTERM") {
+        console.error(`tama: the engine stopped (code ${code}, signal ${signal})`);
+      }
+      engine = null;
+    });
+  }
+
+  return engine;
+}
+
+// stopEngine asks the engine to save and quit.
+function stopEngine() {
+  if (engine) {
+    engine.kill("SIGTERM");
+    engine = null;
+  }
+}
 
 // readPosition returns the last saved position of the device, or nil if there
 // is not one.
@@ -71,13 +119,31 @@ function defaultPosition() {
   };
 }
 
+// inView brings a saved position back onto a display.
+//
+// A position saved next to a monitor that is no longer plugged in would leave
+// the device outside every screen, with no dock icon and no menu bar to find
+// it with, so the position is pulled back into the work area first.
+function inView(position) {
+  const display = screen.getDisplayNearestPoint(position);
+  const area = display.workArea;
+  const width = DEVICE.width + PADDING * 2;
+  const height = DEVICE.height + PADDING * 2;
+
+  return {
+    x: Math.min(Math.max(position.x, area.x), area.x + area.width - width),
+    y: Math.min(Math.max(position.y, area.y), area.y + area.height - height),
+  };
+}
+
 // createWindow builds the floating window.
 function createWindow() {
-  const saved = readPosition() || defaultPosition();
+  const saved = readPosition();
+  const start = inView(saved || defaultPosition());
 
   win = new BrowserWindow({
-    x: saved.x,
-    y: saved.y,
+    x: start.x,
+    y: start.y,
     width: DEVICE.width + PADDING * 2,
     height: DEVICE.height + PADDING * 2,
     frame: false,
@@ -99,6 +165,11 @@ function createWindow() {
   });
 
   // Float above everything, on every space, including full screen ones.
+  //
+  // A window that is moved to every space can be left out of the window
+  // order, and this app has no dock icon to click to bring it back. Showing
+  // it again once it is ready puts it in front of the other floating windows
+  // without taking the keyboard from whatever is being typed into.
   win.setAlwaysOnTop(true, "floating");
   win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
 
@@ -108,9 +179,31 @@ function createWindow() {
 
   win.loadFile(path.join(__dirname, "index.html"));
 
+  win.once("ready-to-show", () => {
+    // Inactive, so that the pet does not steal the cursor from whatever is
+    // being typed into.
+    win.showInactive();
+    win.moveTop();
+  });
+
   win.on("moved", writePosition);
   win.on("close", writePosition);
 }
+
+// The device has no dock icon and no menu bar, so it needs a way to be
+// closed that does not involve a terminal.
+ipcMain.on("tama:menu", () => {
+  if (!win) {
+    return;
+  }
+  Menu.buildFromTemplate([
+    {
+      label: "Quit Tamagotchi",
+      accelerator: "Command+Q",
+      click: () => app.quit(),
+    },
+  ]).popup({ window: win });
+});
 
 // The device is dragged by the renderer, which sends the movement here.
 ipcMain.on("tama:move", (_event, dx, dy) => {
@@ -136,9 +229,13 @@ app.whenReady().then(() => {
   // The device is a pet, not an application. It does not belong in the dock.
   if (process.platform === "darwin") {
     app.dock?.hide();
+    // A menu is still needed for the keyboard shortcuts that come with it,
+    // so that Command Q closes the pet while it has the keyboard.
+    Menu.setApplicationMenu(Menu.buildFromTemplate([{ role: "appMenu" }]));
   }
 
   createWindow();
+  startEngine();
 
   app.on("activate", () => {
     if (BrowserWindow.getAllWindows().length === 0) {
@@ -147,6 +244,10 @@ app.whenReady().then(() => {
   });
 });
 
+// The engine is a child of the shell, so it goes when the shell goes. It
+// saves its state on the way out.
+app.on("before-quit", stopEngine);
 app.on("window-all-closed", () => {
+  stopEngine();
   app.quit();
 });

@@ -27,6 +27,26 @@
 
   const held = { a: false, b: false, c: false };
 
+  const notice = document.getElementById("notice");
+
+  // A second of silence is normal while the engine starts, so the notice
+  // waits. Once the engine has answered, a later gap keeps the last frame and
+  // says nothing, because a pet that briefly loses its engine should not look
+  // like it has been replaced by an error message.
+  let everConnected = false;
+  const noticeTimer = setTimeout(() => {
+    if (!everConnected) {
+      notice.textContent = "No engine. Run make build.";
+      notice.hidden = false;
+    }
+  }, 3000);
+
+  function hideNotice() {
+    everConnected = true;
+    clearTimeout(noticeTimer);
+    notice.hidden = true;
+  }
+
   let socket = null;
   let reconnectTimer = null;
   let reconnectDelay = 500;
@@ -45,6 +65,7 @@
 
     socket.addEventListener("open", () => {
       reconnectDelay = 500;
+      hideNotice();
       sendClock();
     });
 
@@ -200,6 +221,15 @@
 
   document.addEventListener("pointerup", endDrag);
   document.addEventListener("pointercancel", endDrag);
+
+  // ---- quitting ----
+
+  // There is no dock icon and no title bar, so the device carries the only
+  // way out of the app that does not involve a terminal.
+  device.addEventListener("contextmenu", (event) => {
+    event.preventDefault();
+    window.tama.menu();
+  });
 
   // ---- letting the mouse through ----
 

@@ -310,3 +310,21 @@ body {
     animation: none;
   }
 }
+
+/* The note that explains an empty screen. It sits in the padding under the
+ * device, so it never covers the plastic, and it disappears the moment the
+ * engine answers. */
+.notice {
+  position: absolute;
+  left: 50%;
+  bottom: 2px;
+  margin: 0;
+  padding: 3px 10px;
+  transform: translateX(-50%);
+  border-radius: 999px;
+  background: rgba(26, 23, 21, 0.84);
+  color: #f3eee7;
+  font: 11px/1.45 -apple-system, system-ui, sans-serif;
+  white-space: nowrap;
+  pointer-events: none;
+}
