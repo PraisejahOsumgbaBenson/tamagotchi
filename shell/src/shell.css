@@ -8,6 +8,18 @@
  * and the eight status icons are 32 by 32.
  */
 
+/* The wordmark face. Fredoka is a rounded display family, close in spirit to
+ * the chunky soft print on the original shells, and it holds up at the size
+ * the name is printed here. The file ships with the app so the mark looks the
+ * same on every machine. */
+@font-face {
+  font-family: "Tama Display";
+  src: url("fonts/fredoka-one.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: block;
+}
+
 :root {
   --device-width: 276px;
   --device-height: 360px;
@@ -390,36 +402,38 @@ body {
  * and the soft glow of its own colour makes it read on the near-black body. */
 .wordmark {
   position: absolute;
-  top: 83px;
+  top: 70px;
   left: 0;
   right: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 9px;
-  font: 800 11px/1 "Helvetica Neue", Helvetica, Arial, sans-serif;
-  letter-spacing: 2.8px;
+  gap: 7px;
+  font: 400 21px/1 "Tama Display", ui-rounded, "SF Pro Rounded",
+    "Helvetica Neue", Helvetica, Arial, sans-serif;
+  letter-spacing: 0.6px;
   z-index: 2;
   pointer-events: none;
 }
 
 .wordmark span {
   color: rgb(var(--logo-ink));
-  padding-left: 3px;
+  padding-left: 1px;
   text-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.28),
-    0 -1px 0 rgba(0, 0, 0, 0.35),
-    0 0 8px rgba(var(--logo-ink), 0.35);
+    0 1px 0 rgba(255, 255, 255, 0.3),
+    0 -1px 0 rgba(0, 0, 0, 0.4),
+    0 0 4px rgba(0, 0, 0, 0.8),
+    0 0 10px rgba(var(--logo-ink), 0.4);
 }
 
 .wordmark::before,
 .wordmark::after {
   content: "";
   flex: none;
-  width: 9px;
-  height: 8px;
+  width: 12px;
+  height: 11px;
   background: center / contain no-repeat;
-  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.35));
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.45));
 }
 
 .wordmark::before {
