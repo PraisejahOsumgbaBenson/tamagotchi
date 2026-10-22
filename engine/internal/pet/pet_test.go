@@ -208,19 +208,18 @@ func TestTheCallStops(t *testing.T) {
 
 func TestThePetGrowsAndAges(t *testing.T) {
 	p := New(epoch)
+	now := epoch
 
-	p.Tick(epoch.Add(ageInterval))
-	if p.Age != 1 {
-		t.Errorf("age = %d, want 1", p.Age)
-	}
-	if p.Stage != StageBaby {
-		t.Errorf("stage = %v, want baby", p.Stage)
+	// The pet is walked through its life a step at a time, the way the engine
+	// ticks it, rather than teleported to the end of it.
+	for i := 0; i < 5; i++ {
+		now = now.Add(ageInterval)
+		p.Tick(now)
+		if p.Age != i+1 {
+			t.Fatalf("after %d intervals the age is %d, want %d", i+1, p.Age, i+1)
+		}
 	}
 
-	p.Tick(epoch.Add(5 * ageInterval))
-	if p.Age != 5 {
-		t.Errorf("age = %d, want 5", p.Age)
-	}
 	if p.Stage != StageAdult {
 		t.Errorf("stage = %v, want adult", p.Stage)
 	}
@@ -311,6 +310,55 @@ func TestAWithCMutesTheSound(t *testing.T) {
 	}
 	if p.Selected != -1 {
 		t.Errorf("nothing should be selected, got %d", p.Selected)
+	}
+}
+
+func TestAFreshPetDoesNotCallStraightAway(t *testing.T) {
+	p := New(epoch)
+
+	// The engine ticks the pet at the frame rate. Rolling the dice on every
+	// one of those ticks had the pet calling for attention within a second of
+	// being born.
+	for i := 0; i < 300; i++ {
+		p.Tick(epoch.Add(time.Duration(i) * 33 * time.Millisecond))
+	}
+
+	if p.Calling {
+		t.Errorf("a pet with full hearts called after ten seconds: %v", p.CallReason)
+	}
+	if p.Sick {
+		t.Error("a clean pet with no mess got sick")
+	}
+}
+
+func TestAMessStartsAgingWhenItAppears(t *testing.T) {
+	p := New(epoch)
+
+	// The first mess arrives one poop interval in.
+	p.Tick(epoch.Add(poopIntervalBaby + time.Second))
+
+	if p.Poops != 1 {
+		t.Fatalf("the pet has %d messes, want 1", p.Poops)
+	}
+	if got := p.LastPoopSeen.Sub(epoch); got < poopIntervalBaby {
+		t.Errorf("the mess started aging at %v, before it appeared at %v", got, poopIntervalBaby)
+	}
+	if p.Sick {
+		t.Error("the pet got sick the moment it made a mess")
+	}
+}
+
+func TestALongAbsenceDoesNotKillThePet(t *testing.T) {
+	p := New(epoch)
+
+	// The laptop lid was shut for a night.
+	p.Tick(epoch.Add(8 * time.Hour))
+
+	if p.Dead() {
+		t.Fatal("the pet died while the laptop was shut")
+	}
+	if p.Hunger >= 4 || p.Happy >= 4 {
+		t.Errorf("the absence cost the pet nothing: hunger %d, happy %d", p.Hunger, p.Happy)
 	}
 }
 
