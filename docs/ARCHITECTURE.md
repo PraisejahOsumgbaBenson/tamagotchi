@@ -45,9 +45,11 @@ The shell holds everything that is worth throwing away and rewriting: the
 plastic, the pixel grid, the button physics, the audio. None of it has
 meaning without the engine's output. The printed shell designs are CSS
 variables on one element, so adding a design is a block of colour values and
-an SVG tile, not a new screen. The design name travels to the renderer over
-IPC and is saved next to the window position, so the pet comes back wearing
-the same shell.
+an SVG tile, not a new screen. Two noise fields over the plastic give it the
+mottle and tooth of moulded ABS, and a diagonal reflection and rim light keep
+it from reading as a flat silhouette. The design name travels to the renderer
+over IPC and is saved next to the window position, so the pet comes back
+wearing the same shell.
 
 The split is what makes the engine portable. The same Go package that drives
 the desktop build compiles to WebAssembly for a browser version and to TinyGo
