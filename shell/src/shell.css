@@ -20,6 +20,14 @@
   font-display: block;
 }
 
+@font-face {
+  font-family: "Tama Splendid";
+  src: url("fonts/luckiest-guy.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: block;
+}
+
 :root {
   --device-width: 276px;
   --device-height: 360px;
@@ -230,6 +238,36 @@
   --pattern-size: 44px 44px;
 }
 
+/* Tamagotchi Connection Version 4.5 (2007).
+ *
+ * Glossy baby pink plastic covered in white hearts, just like the classic
+ * pink heart shell. The buttons and wordmark are tinted to match so the
+ * whole thing reads as one candy coloured piece. */
+.device[data-theme="connection"] {
+  --plastic-light: #ffe5ee;
+  --plastic-mid: #ffc9dc;
+  --plastic-dark: #f5a7c4;
+  --plastic-shade: #e08aa9;
+
+  --button-light: #fff1f6;
+  --button-mid: #ffb7d2;
+  --button-dark: #e98fb6;
+  --button-ink: 132, 52, 82;
+  --btn-shade: 168, 78, 108;
+  --btn-socket: 126, 78, 94;
+
+  --rim-rgb: 255, 248, 251;
+  --shade-rgb: 188, 110, 138;
+  --well-shade: 150, 86, 110;
+
+  --print-ink: 255, 255, 255;
+  --logo-ink: 255, 122, 168;
+  --wordmark-halo: 255, 170, 208;
+
+  --pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='38' height='38'%3E%3Cg fill='%23ffffff' fill-opacity='0.95'%3E%3Cpath transform='translate(4 6) scale(0.48)' d='M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z'/%3E%3Cpath transform='translate(20 20) scale(0.38)' d='M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z'/%3E%3C/g%3E%3C/svg%3E");
+  --pattern-size: 38px 38px;
+}
+
 /* The window is transparent and the whole page is a grab area for moving
  * the device around the desktop. */
 html,
@@ -408,10 +446,11 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 7px;
-  font: 400 21px/1 "Tama Display", ui-rounded, "SF Pro Rounded",
-    "Helvetica Neue", Helvetica, Arial, sans-serif;
-  letter-spacing: 0.6px;
+  gap: 6px;
+  font: 400 19px/1 "Tama Splendid", "Tama Display", ui-rounded,
+    "SF Pro Rounded", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
   z-index: 2;
   pointer-events: none;
 }
@@ -420,12 +459,12 @@ body {
   color: rgb(var(--logo-ink));
   padding-left: 1px;
   text-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.5),
-    0 -1px 0 rgba(0, 0, 0, 0.2),
+    0 1px 0 rgba(255, 255, 255, 0.4),
+    0 -1px 0 rgba(0, 0, 0, 0.25),
     0 0 6px rgba(var(--logo-ink), 1),
-    0 0 14px rgba(var(--logo-ink), 0.8),
-    0 0 28px rgba(var(--logo-ink), 0.5);
-  filter: drop-shadow(0 0 9px rgba(var(--logo-ink), 0.55));
+    0 0 16px rgba(var(--logo-ink), 0.9),
+    0 0 30px rgba(var(--logo-ink), 0.6);
+  filter: drop-shadow(0 0 10px rgba(var(--logo-ink), 0.6));
 }
 
 .wordmark::before,
@@ -439,11 +478,11 @@ body {
 }
 
 .wordmark::before {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23ff9ec4' d='M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='rgb(var(--logo-ink))' d='M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z'/%3E%3C/svg%3E");
 }
 
 .wordmark::after {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23ff9ec4' d='M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='rgb(var(--logo-ink))' d='M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z'/%3E%3C/svg%3E");
 }
 
 /* The recess that the glass sits in. */
@@ -642,6 +681,80 @@ body {
     inset 0 1px 1px rgba(255, 255, 255, 0.35),
     0 0 0 2px rgba(var(--btn-socket), 0.26),
     0 2px 3px rgba(var(--btn-socket), 0.35);
+}
+
+/* The side antenna found on the Tamagotchi Connection v3/v4/v4.5 shells.
+ *
+ * A small plastic stem with a star on top for v4.5, sitting on the left side
+ * of the egg. It is clipped to the device so it reads as part of the moulded
+ * shell rather than stuck on. */
+.antenna {
+  position: absolute;
+  left: -16px;
+  top: 76px;
+  width: 22px;
+  height: 48px;
+  z-index: 5;
+  pointer-events: none;
+  filter: drop-shadow(0 1px 2px rgba(40, 20, 30, 0.4));
+}
+
+.antenna::before {
+  content: "";
+  position: absolute;
+  left: 9px;
+  top: 6px;
+  width: 5px;
+  height: 28px;
+  border-radius: 5px;
+  background: linear-gradient(
+    90deg,
+    var(--plastic-dark) 0%,
+    var(--plastic-mid) 40%,
+    var(--plastic-light) 50%,
+    var(--plastic-mid) 60%,
+    var(--plastic-dark) 100%
+  );
+  box-shadow:
+    inset 1px 0 1px rgba(var(--rim-rgb), 0.5),
+    inset -1px 0 1px rgba(var(--shade-rgb), 0.5);
+  transform: rotate(-18deg);
+}
+
+.antenna::after {
+  content: "";
+  position: absolute;
+  left: 4px;
+  top: -6px;
+  width: 16px;
+  height: 16px;
+  background: radial-gradient(
+      120% 120% at 30% 25%,
+      var(--plastic-light) 0%,
+      var(--plastic-mid) 65%,
+      var(--plastic-dark) 100%
+    ),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23ffffff' d='M12 2L13.8 10.2 22 12 13.8 13.8 12 22 10.2 13.8 2 12 10.2 10.2Z'/%3E%3C/svg%3E");
+  background-size: 100% 100%, 14px 14px;
+  background-position: center, center;
+  background-repeat: no-repeat;
+  clip-path: polygon(
+    50% 0%,
+    61% 35%,
+    98% 35%,
+    68% 57%,
+    79% 91%,
+    50% 70%,
+    21% 91%,
+    32% 57%,
+    2% 35%,
+    39% 35%
+  );
+  box-shadow:
+    inset 0 1px 1px rgba(var(--rim-rgb), 0.7),
+    inset 0 -2px 3px rgba(var(--shade-rgb), 0.5),
+    0 1px 2px rgba(var(--shade-rgb), 0.6);
+  transform: rotate(-18deg);
 }
 
 /* The device lifts off the desk very slightly and comes back down. */
